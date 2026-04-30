@@ -1,22 +1,28 @@
 <script setup lang="ts">
-import { createClient } from '@supabase/supabase-js'
-
-const email = ref('')
-const password = ref('')
-const loading = ref(false)
-const config = useRuntimeConfig();
-const supabaseClient = createClient(config.public.supabaseUrl, config.public.supabasePublishableKey)
+definePageMeta({ ssr: false });
+const email = ref('');
+const password = ref('');
+const loading = ref(false);
+const supabaseClient = useSupabaseClient();
 
 async function logInRequest() {
   try{
     loading.value = true;
-    const { error } = await supabaseClient.auth.signInWithOtp({ email: email.value })
-    if (error) throw error;
-    alert("wait")
+    const { data } = await supabaseClient.auth.signInWithPassword({
+      email: email.value,
+      password: password.value,
+      // fix this tmr, property emailRedirectTo doesn't exist
+      options: {
+        emailRedirectTo: `${window.location.origin}/confirm`
+      }
+    })
+    if (data) console.log("logged in")
   } catch (error){
     if(error instanceof Error){
-
+      console.log(error.message)
     }
+  } finally {
+    loading.value = false;
   }
 }
 
@@ -25,14 +31,14 @@ async function logInRequest() {
 <template>
     <form @submit.prevent="logInRequest">
       <div>
-        <h1 class="header"">welcome to register</h1>
+        <h1 class="header">welcome to signin</h1>
       </div>
       <div>
-        <input type="email" placeholder="example@example.com">
-        <input type="text" placeholder="123">
+        <input v-model="email" type="email" placeholder="example@example.com">
+        <input v-model="password" type="password" placeholder="password">
       </div>
       <div>
-        <input type="submit" :value="loading ? 'Loading' : 'Signup/Register'" :disabled="loading" />">
+        <input type="submit" :value="loading ? 'Loading' : 'Sign In'" :disabled="loading" />
       </div>
 
     </form>

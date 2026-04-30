@@ -3,15 +3,20 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
   pages: true,
-  runtimeConfig: {
-    public: {
-      supabaseUrl: process.env.SUPABASE_URL,
-      supabasePublishableKey: process.env.SUPABASE_PUBLISHABLE_KEY,
-    }
-  },
   modules: [
     '@nuxtjs/supabase',
     '@nuxt/eslint',
     '@nuxtjs/tailwindcss'
-  ]
+  ],
+  supabase: {
+    url: process.env.SUPABASE_URL,
+    key: process.env.SUPABASE_PUBLISHABLE_KEY,
+    redirectOptions: {
+      login: '/login',
+      callback: '/confirm',
+      include: undefined,
+      exclude: ['/login', '/signup', '/confirm', '/'],
+      saveRedirectToCookie: true
+    }
+  }
 })
