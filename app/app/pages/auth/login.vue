@@ -1,25 +1,24 @@
 <script setup lang="ts">
 definePageMeta({ ssr: false });
-const email = ref('')
-const password = ref('')
-const loading = ref(false)
-
+const email = ref('');
+const password = ref('');
+const loading = ref(false);
 const supabaseClient = useSupabaseClient();
 
 async function logInRequest() {
   try{
     loading.value = true;
-    const { error } = await supabaseClient.auth.signUp({
+    const { data } = await supabaseClient.auth.signInWithOtp({
       email: email.value,
-      password: password.value
+      options: {
+        shouldCreateUser: true,
+        emailRedirectTo: `${window.location.origin}/home`
+      }
     })
-    if (error) throw error;
-    alert("wait")
   } catch (error){
     if(error instanceof Error){
-        console.log(error.message)
+      console.log(error.message)
     }
-
   } finally {
     loading.value = false;
   }
@@ -30,14 +29,14 @@ async function logInRequest() {
 <template>
     <form @submit.prevent="logInRequest">
       <div>
-        <h1 class="header">welcome to register</h1>
+        <h1 class="header">welcome to signin/login</h1>
       </div>
       <div>
         <input v-model="email" type="email" placeholder="example@example.com">
-        <input v-model="password" type="password" placeholder="password" >
+
       </div>
       <div>
-        <input type="submit" :value="loading ? 'Loading' : 'Signup/Register'" :disabled="loading" />
+        <input type="submit" :value="loading ? 'Loading' : 'Sign In'" :disabled="loading" />
       </div>
 
     </form>

@@ -1,5 +1,9 @@
-// https://nuxt.com/docs/api/configuration/nuxt-config
+import tailwindcss from "@tailwindcss/vite";
 export default defineNuxtConfig({
+  vite: {
+    plugins: [tailwindcss() as any],
+  },
+  css: ['~/assets/css/main.css'],
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
   pages: true,
@@ -12,10 +16,10 @@ export default defineNuxtConfig({
     url: process.env.SUPABASE_URL,
     key: process.env.SUPABASE_PUBLISHABLE_KEY,
     redirectOptions: {
-      login: '/login',
-      callback: '/confirm',
+      login: '/auth/login',
+      callback: '/auth/confirm',
       include: undefined,
-      exclude: ['/login', '/signup', '/confirm', '/'],
+      exclude: ['/auth/**'],
       saveRedirectToCookie: true
     }
   }

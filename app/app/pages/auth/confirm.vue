@@ -1,19 +1,12 @@
 <script setup lang="ts">
-const user = useSupabaseUser();
-const redirectInfo = useSupabaseCookieRedirect();
+
 definePageMeta({ ssr: false });
-watch(user, () => {
-  if (user.value) {
-    const path = redirectInfo.pluck()
-    if (path) {
-      navigateTo(path);
-    } else {
-      navigateTo('/home');
-    }
-  } else {
-    navigateTo('/login');
-  }
-},{ immediate: true });
+const supabase = useSupabaseClient()
+// ---cut---
+const { error } = await supabase.auth.verifyOtp({
+  token_hash: 'hash',
+  type: 'email',
+})
 </script>
 
 <template>
