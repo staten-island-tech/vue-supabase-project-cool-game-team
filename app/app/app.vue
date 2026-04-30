@@ -2,7 +2,7 @@
 <script setup>
 import { createClient } from '@supabase/supabase-js'
 const config = useRuntimeConfig()
-const supabase = createClient(config.public.supabaseUrl, config.public.supabasePublishableKey)
+const supabase = useSupabaseClient()
 const instruments = ref([])
 
 async function getInstruments() {
@@ -16,7 +16,5 @@ onMounted(() => {
 </script>
 
 <template>
-  <ul>
-    <li v-for="instrument in instruments" :key="instrument.id">{{ instrument.name }}</li>
-  </ul>
+  <NuxtPage/>
 </template>
