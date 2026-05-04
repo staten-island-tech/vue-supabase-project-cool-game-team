@@ -1,42 +1,63 @@
 <template>
-    <div>
-        <p>tetstt</p>
-    </div>
+  <div ref="canvasContainer"></div>
 </template>
 
-<script lang="ts" src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.15.0/matter.min.js">
-// 1. Module aliases
+<script lang="ts">
+import { defineComponent, ref, onMounted, onBeforeUnmount } from "vue";
+import Matter from "matter-js";
+
+definePageMeta({ ssr: false });
+
 const { Engine, Render, Runner, Bodies, World } = Matter;
 
-// 2. Create engine
-const engine = Engine.create();
+export default defineComponent({
+  setup() {
+    const canvasContainer = ref<HTMLElement | null>(null);
 
-// 3. Create renderer
-const render = Render.create({
-    element: document.body,
-    engine: engine,
-    options: {
-        width: 800,
-        height: 600,
-        wireframes: false // Set to false to see filled shapes
-    }
+    let engine: Matter.Engine;
+    let render: Matter.Render;
+    let runner: Matter.Runner;
+
+    onMounted(() => {
+      if (!canvasContainer.value) return;
+
+      // 1. Create engine
+      engine = Engine.create();
+
+      // 2. Create renderer — attach to your ref'd div, not document.body
+      render = Render.create({
+        element: canvasContainer.value,
+        engine: engine,
+        options: {
+          width: 800,
+          height: 600,
+          wireframes: false,
+        },
+      });
+
+      // 3. Create bodies
+      const boxA = Bodies.rectangle(400, 200, 80, 80);
+      const ballA = Bodies.circle(380, 100, 40, { restitution: 0.5 });
+      const ground = Bodies.rectangle(400, 580, 810, 40, { isStatic: true });
+
+      // 4. Add to world
+      World.add(engine.world, [boxA, ballA, ground]);
+
+      // 5. Run
+      Render.run(render);
+      runner = Runner.create();
+      Runner.run(runner, engine);
+    });
+
+    onBeforeUnmount(() => {
+      // Clean up to avoid memory leaks on route change
+      if (render) Render.stop(render);
+      if (runner) Runner.stop(runner);
+      if (engine) Engine.clear(engine);
+      render?.canvas?.remove();
+    });
+
+    return { canvasContainer };
+  },
 });
-
-// 4. Create bodies and ground
-const boxA = Bodies.rectangle(400, 200, 80, 80);
-const ballA = Bodies.circle(380, 100, 40, { restitution: 0.5 });
-const ground = Bodies.rectangle(400, 580, 810, 40, { isStatic: true });
-
-// 5. Add bodies to world
-World.add(engine.world, [boxA, ballA, ground]);
-
-// 6. Run renderer and engine
-Render.run(render);
-const runner = Runner.create();
-Runner.run(runner, engine);
-
 </script>
-
-<style scoped>
-
-</style>
