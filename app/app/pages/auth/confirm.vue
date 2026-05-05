@@ -1,8 +1,7 @@
 <script setup lang="ts">
 
 definePageMeta({ ssr: false });
-const supabase = useSupabaseClient()
-// ---cut---
+const supabase = useSupabaseClient();
 const { error } = await supabase.auth.verifyOtp({
   token_hash: 'hash',
   type: 'email',
