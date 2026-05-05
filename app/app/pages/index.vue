@@ -1,5 +1,5 @@
 <template>
-  <div ref="canvasContainer"></div>
+  <div ref="game"></div>
 </template>
 
 <script lang="ts">
@@ -12,21 +12,19 @@ const { Engine, Render, Runner, Bodies, World } = Matter;
 
 export default defineComponent({
   setup() {
-    const canvasContainer = ref<HTMLElement | null>(null);
+    const game = ref<HTMLElement | null>(null);
 
     let engine: Matter.Engine;
     let render: Matter.Render;
     let runner: Matter.Runner;
 
     onMounted(() => {
-      if (!canvasContainer.value) return;
+      if (!game.value) return;
 
-      // 1. Create engine
       engine = Engine.create();
 
-      // 2. Create renderer — attach to your ref'd div, not document.body
       render = Render.create({
-        element: canvasContainer.value,
+        element: game.value,
         engine: engine,
         options: {
           width: 800,
@@ -35,28 +33,21 @@ export default defineComponent({
         },
       });
 
-      // 3. Create bodies, filler assets rn, will replace later
-      const boxA = Bodies.rectangle(400, 200, 80, 80);
       const ballA = Bodies.circle(380, 100, 40, { restitution: 0.5 });
       const ground = Bodies.rectangle(400, 580, 810, 40, { isStatic: true });
 
-      // 4. Add to world
-      World.add(engine.world, [boxA, ballA, ground]);
-      // 5. Event listener
+      World.add(engine.world, [ballA, ground]);
 
-      type keys = {
-        keytype: Boolean
-      } //def broken
-      const keys = {};
       Matter.Events.on(engine, 'beforeUpdate', function() {
-          const speed = 5;
+          const speed = 3;
           let vx = 0;
           let vy = 0;
-
-          if (keys['ArrowLeft']) vx = -speed;
-          if (keys['ArrowRight']) vx = speed;
-          // Use setVelocity for crisp movement
-          Matter.Body.setVelocity(ballA, { x: vx, y: vy });
+          document.addEventListener('keydown', e => {
+            if (e.key === 'ArrowLeft') vx = -speed 
+            else if (e.key === 'ArrowRight') vx = speed
+            console.log(vx)
+            Matter.Body.setVelocity(ballA, { x: vx, y: vy });
+          })
       });
       // 6. Run
       Render.run(render);
@@ -72,7 +63,7 @@ export default defineComponent({
       render?.canvas?.remove();
     });
 
-    return { canvasContainer };
+    return { game};
   },
 });
 </script>
