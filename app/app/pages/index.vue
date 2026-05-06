@@ -37,27 +37,32 @@ export default defineComponent({
         engine: engine,
         options: {
           width: 800,
-          height: 1200,
+          height: 900,
           wireframes: false,
         },
       });
 
       //filler fruits, add the real hitboxes of the assets later
-      const ballA = Bodies.circle(380, 100, 40, { restitution: 0.5 });
-      const ballB = Bodies.circle(380, 100, 40, { restitution: 0.5});
+      
       const ground = Bodies.rectangle(400, 800, 810, 40, { isStatic: true });
+      const leftWall = Bodies.rectangle(10, 200, 20, 1160, { isStatic: true });
+      const rightWall = Bodies.rectangle(785, 200, 20, 1160, { isStatic: true });
+      const containerTop = Bodies.rectangle(400, 700, 810, 40, { isStatic: true, isSensor: true })
+      console.log()
       function createNewFallingFruit() {
         //this needs to happen infinitely in a loop until the user loses- while true?
         const fruit =  Bodies.circle(380, 100, 40, { restitution: 0.5 });
         Composite.add(engine.world, fruit);
         return fruit
       }
-    
+      function loss() {
+        //need to track all fruit positions to see if its above container top
+        //cant just keep track of position when theyre spawned bc they move
+        //can we just track the poisition of the highest fruit?
+      }
       let fruit: any;
-      World.add(engine.world, [ballA, ground]);
+      World.add(engine.world, [ground, leftWall, rightWall, containerTop]);
       Matter.Events.on(engine, 'beforeUpdate', function() {
-          //const fruit = createNewFallingfruit()
-          //need to shift control to the newest fruit
           //to do: get current falling fruit
           const speed = 3; //to do: adjustable speed
           let vx = 0;
@@ -68,11 +73,23 @@ export default defineComponent({
             Matter.Body.setVelocity(fruit, { x: vx, y: vy });
           })
       });
-      //delayed fruit
+      Matter.Events.on(engine, 'collisionStart', function(event) {
+        let pairs = event.pairs;
+
+        // Check each pair of colliding bodies
+        pairs.forEach(function(pair) {
+            if (pair.bodyA.label === 'player' || pair.bodyB.label === 'player') {
+                console.log("Player hit something!");
+            }
+    });
+});
+
 
       setInterval(() => {
         fruit = createNewFallingFruit()
+        
       }, 2000);
+      
       
       // 6. Run
       Render.run(render);
