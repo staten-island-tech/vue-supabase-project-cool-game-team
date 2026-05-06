@@ -47,11 +47,11 @@ export default defineComponent({
       const ballB = Bodies.circle(380, 100, 40, { restitution: 0.5});
       const ground = Bodies.rectangle(400, 800, 810, 40, { isStatic: true });
       function createNewFallingFruit() {
-  //this needs to happen infinitely in a loop until the user loses- while true?
-  const fruit =  Bodies.circle(380, 100, 40, { restitution: 0.5 });
-  Composite.add(engine.world, fruit);
-  return fruit
-}
+        //this needs to happen infinitely in a loop until the user loses- while true?
+        const fruit =  Bodies.circle(380, 100, 40, { restitution: 0.5 });
+        Composite.add(engine.world, fruit);
+        return fruit
+      }
     
       let fruit: any;
       World.add(engine.world, [ballA, ground]);
@@ -70,10 +70,9 @@ export default defineComponent({
       });
       //delayed fruit
 
-        setTimeout(() => {
-      fruit = createNewFallingFruit()
-  }, 2000);
-      
+      setInterval(() => {
+        fruit = createNewFallingFruit()
+      }, 2000);
       
       // 6. Run
       Render.run(render);
