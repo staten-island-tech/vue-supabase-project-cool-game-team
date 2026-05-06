@@ -9,12 +9,8 @@ import Matter from "matter-js";
 definePageMeta({ ssr: false });
 
 const { Engine, Render, Runner, Bodies, World, Composite } = Matter;
-function createNewFallingItem() {
-  //this needs to happen infinitely in a loop until the user loses- while true?
-  const item =  Bodies.circle(380, 100, 40, { restitution: 0.5 });
-  return item
-}
-type fallingItem = {
+
+type fallingfruit = {
   name: string,
   x: number,
   y: number,
@@ -23,14 +19,14 @@ type fallingItem = {
   //to do: figure out how to do hitboxes
   //type isnt used rn bc we don't have the actual assets yet but we'll use the type to determine the hitbox
 }
-type fallingItems = fallingItem[]
+type fallingFruits = fallingfruit[]
 export default defineComponent({
   setup() {
     const game = ref<HTMLElement | null>(null);
     let engine: Matter.Engine;
     let render: Matter.Render;
     let runner: Matter.Runner;
-
+      
     onMounted(() => {
       if (!game.value) return;
 
@@ -46,29 +42,39 @@ export default defineComponent({
         },
       });
 
-      //filler items, add the real hitboxes of the assets later
+      //filler fruits, add the real hitboxes of the assets later
       const ballA = Bodies.circle(380, 100, 40, { restitution: 0.5 });
       const ballB = Bodies.circle(380, 100, 40, { restitution: 0.5});
       const ground = Bodies.rectangle(400, 800, 810, 40, { isStatic: true });
-
+      function createNewFallingFruit() {
+  //this needs to happen infinitely in a loop until the user loses- while true?
+  const fruit =  Bodies.circle(380, 100, 40, { restitution: 0.5 });
+  Composite.add(engine.world, fruit);
+  return fruit
+}
+    
+      let fruit: any;
       World.add(engine.world, [ballA, ground]);
       Matter.Events.on(engine, 'beforeUpdate', function() {
-          const item = createNewFallingItem()
-          //need to shift control to the newest item
-          //to do: get current falling item
+          //const fruit = createNewFallingfruit()
+          //need to shift control to the newest fruit
+          //to do: get current falling fruit
           const speed = 3; //to do: adjustable speed
           let vx = 0;
           let vy = 0;
           document.addEventListener('keydown', e => {
             if (e.key === 'ArrowLeft') vx = -speed 
             else if (e.key === 'ArrowRight') vx = speed
-            Matter.Body.setVelocity(item, { x: vx, y: vy });
+            Matter.Body.setVelocity(fruit, { x: vx, y: vy });
           })
       });
-      //delayed item
+      //delayed fruit
+
         setTimeout(() => {
-      Composite.add(engine.world, ballB);
-  }, 3000);
+      fruit = createNewFallingFruit()
+  }, 2000);
+      
+      
       // 6. Run
       Render.run(render);
       runner = Runner.create();
