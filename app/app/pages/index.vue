@@ -1,9 +1,10 @@
 <template>
-  <div ref="game"></div>
+  <div ref="game">
+  </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted, onBeforeUnmount } from "vue";
+import { defineComponent, ref, onMounted, onBeforeUnmount} from "vue";
 import Matter from "matter-js";
 
 definePageMeta({ ssr: false });
@@ -47,18 +48,13 @@ export default defineComponent({
       const ground = Bodies.rectangle(400, 800, 810, 40, { isStatic: true });
       const leftWall = Bodies.rectangle(10, 200, 20, 1160, { isStatic: true });
       const rightWall = Bodies.rectangle(785, 200, 20, 1160, { isStatic: true });
-      const containerTop = Bodies.rectangle(400, 700, 810, 40, { isStatic: true, isSensor: true })
-      console.log()
+      const containerTop = Bodies.rectangle(397, 100, 755, 20, { isStatic: true, isSensor: true, render: {fillStyle: 'red', opacity: 0.3}})
+
       function createNewFallingFruit() {
         //this needs to happen infinitely in a loop until the user loses- while true?
         const fruit =  Bodies.circle(380, 100, 40, { restitution: 0.5 });
         Composite.add(engine.world, fruit);
         return fruit
-      }
-      function loss() {
-        //need to track all fruit positions to see if its above container top
-        //cant just keep track of position when theyre spawned bc they move
-        //can we just track the poisition of the highest fruit?
       }
       let fruit: any;
       World.add(engine.world, [ground, leftWall, rightWall, containerTop]);
@@ -73,23 +69,25 @@ export default defineComponent({
             Matter.Body.setVelocity(fruit, { x: vx, y: vy });
           })
       });
+      
       Matter.Events.on(engine, 'collisionStart', function(event) {
         let pairs = event.pairs;
 
-        // Check each pair of colliding bodies
         pairs.forEach(function(pair) {
-            if (pair.bodyA.label === 'player' || pair.bodyB.label === 'player') {
-                console.log("Player hit something!");
-            }
+          const labels = [pair.bodyA.label, pair.bodyB.label];
+        
+        if (labels.includes('Circle Body') && labels.includes('Rectangle Body')) {
+            //to do: connect w/ lose page/indicator
+            navigateTo('/lose')
+          } 
     });
+    
 });
 
 
       setInterval(() => {
         fruit = createNewFallingFruit()
-        
       }, 2000);
-      
       
       // 6. Run
       Render.run(render);
