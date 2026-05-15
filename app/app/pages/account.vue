@@ -5,4 +5,5 @@
 <script>
 const supabase = useSupabaseClient()
 supabase.auth.getUser()
+
 </script>
