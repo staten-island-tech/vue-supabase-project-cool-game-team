@@ -16,9 +16,12 @@
     "@supabase/supabase-js": "^2.105.1",
     "daisyui": "^5.5.19",
     "eslint": "^10.2.1",
+    "jsdoc": "^4.0.5",
     "matter-js": "^0.20.0",
     "nuxt": "^4.4.2",
     "pinia": "^3.0.4",
+    "tail": "^2.2.6",
+    "tailwindcss": "^4.2.4",
     "vue": "^3.5.33",
     "vue-router": "^5.0.6"
   },
