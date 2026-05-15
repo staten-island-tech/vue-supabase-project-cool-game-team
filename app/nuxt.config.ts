@@ -1,5 +1,12 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
+<<<<<<< Updated upstream
+=======
+  vite: {
+    plugins: [tailwindcss()],
+  },
+  css: ['~/assets/css/main.css'],
+>>>>>>> Stashed changes
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
   runtimeConfig: {
