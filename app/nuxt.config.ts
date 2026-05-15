@@ -1,23 +1,26 @@
-// https://nuxt.com/docs/api/configuration/nuxt-config
+import tailwindcss from "@tailwindcss/vite";
 export default defineNuxtConfig({
-<<<<<<< Updated upstream
-=======
   vite: {
     plugins: [tailwindcss()],
   },
   css: ['~/assets/css/main.css'],
->>>>>>> Stashed changes
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
-  runtimeConfig: {
-    public: {
-      supabaseUrl: process.env.SUPABASE_URL,
-      supabasePublishableKey: process.env.SUPABASE_PUBLISHABLE_KEY,
-    }
-  },
+  pages: true,
   modules: [
     '@nuxtjs/supabase',
     '@nuxt/eslint',
     '@nuxtjs/tailwindcss'
-  ]
+  ],
+  supabase: {
+    url: process.env.SUPABASE_URL,
+    key: process.env.SUPABASE_PUBLISHABLE_KEY,
+    redirectOptions: {
+      login: '/auth/login',
+      callback: '/auth/confirm',
+      include: undefined,
+      exclude: ['/auth/**'],
+      saveRedirectToCookie: true
+    }
+  }
 })
