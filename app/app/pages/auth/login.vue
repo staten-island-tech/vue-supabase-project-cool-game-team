@@ -27,7 +27,7 @@ async function logInRequest() {
 
 </script>
 <template>
-    <form @submit.prevent="logInRequest">
+    <form>
       <div>
         <h1 class="header">welcome to signin/login</h1>
       </div>
@@ -36,7 +36,7 @@ async function logInRequest() {
 
       </div>
       <div>
-        <input type="submit" :value="loading ? 'Loading' : 'Sign In'" :disabled="loading" />
+        <input  @submit.prevent="logInRequest" type="submit" :value="loading ? 'Loading' : 'Sign In'" :disabled="loading" />
       </div>
 
     </form>

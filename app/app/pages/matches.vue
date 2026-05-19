@@ -7,7 +7,8 @@
 import { defineComponent, ref, onMounted, onBeforeUnmount} from "vue";
 import Matter from "matter-js";
 
-definePageMeta({ ssr: false });
+definePageMeta({ ssr: false, middleware: []});
+// remove middleware later when finished 
 
 const { Engine, Render, Runner, Bodies, World, Composite } = Matter;
 
@@ -48,11 +49,20 @@ export default defineComponent({
       const ground = Bodies.rectangle(400, 800, 810, 40, { isStatic: true });
       const leftWall = Bodies.rectangle(10, 200, 20, 1160, { isStatic: true });
       const rightWall = Bodies.rectangle(785, 200, 20, 1160, { isStatic: true });
-      const containerTop = Bodies.rectangle(397, 100, 755, 20, { isStatic: true, isSensor: true, render: {fillStyle: 'red', opacity: 0.3}})
+      const containerTop = Bodies.rectangle(397, 70, 755, 20, { isStatic: true, isSensor: true, render: {fillStyle: 'red', opacity: 0.3}})
 
       function createNewFallingFruit() {
         //this needs to happen infinitely in a loop until the user loses- while true?
-        const fruit =  Bodies.circle(380, 100, 40, { restitution: 0.5 });
+        const fruit = Bodies.circle(380, 140, 40, {
+        restitution: 0.5,
+        render: {
+            sprite: {
+                texture: '/public/img/circle0.png',
+                xScale: 0.5,
+                yScale: 0.5
+            }
+        }
+    });
         Composite.add(engine.world, fruit);
         return fruit
       }
@@ -75,10 +85,10 @@ export default defineComponent({
 
         pairs.forEach(function(pair) {
           const labels = [pair.bodyA.label, pair.bodyB.label];
-        
+          console.log(pair)
         if (labels.includes('Circle Body') && labels.includes('Rectangle Body')) {
-            //to do: connect w/ lose page/indicator
-            navigateTo('/lose')
+     
+            // navigateTo('/lose')
           } 
     });
     
