@@ -52,14 +52,13 @@ export default defineComponent({
       const containerTop = Bodies.rectangle(397, 70, 755, 20, { isStatic: true, isSensor: true, render: {fillStyle: 'red', opacity: 0.3}})
 
       function createNewFallingFruit() {
-        //this needs to happen infinitely in a loop until the user loses- while true?
         const fruit = Bodies.circle(380, 140, 40, {
         restitution: 0.5,
         render: {
             sprite: {
                 texture: '/public/img/circle0.png',
-                xScale: 0.5,
-                yScale: 0.5
+                xScale: 0.2,
+                yScale: 0.2
             }
         }
     });
