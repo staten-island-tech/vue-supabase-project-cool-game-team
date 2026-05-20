@@ -1,14 +1,13 @@
 <script setup lang="ts">
 definePageMeta({ ssr: false });
 const email = ref('');
-const password = ref('');
 const loading = ref(false);
 const supabaseClient = useSupabaseClient();
 
 async function logInRequest() {
   try{
     loading.value = true;
-    const { data } = await supabaseClient.auth.signInWithOtp({
+    const { data, error } = await supabaseClient.auth.signInWithOtp({
       email: email.value,
       options: {
         shouldCreateUser: true,

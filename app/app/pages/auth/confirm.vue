@@ -2,8 +2,9 @@
 
 definePageMeta({ ssr: false });
 const supabase = useSupabaseClient();
+const hash = useRoute().query.token as string
 const { error } = await supabase.auth.verifyOtp({
-  token_hash: 'hash',
+  token_hash: hash,
   type: 'email',
 })
 </script>
