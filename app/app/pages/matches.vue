@@ -14,20 +14,21 @@ type FruitType = {
   img: string;
   radius: number;
   scaleFactor: number;
+  selectionProbability: number;
 };
 
 const fruitTypes: Record<string, FruitType> = {
-  cherry:     { img: '/img/cherry.png',     radius: 40, scaleFactor: 0.2 },
-  strawberry: { img: '/img/strawberry.png', radius: 40, scaleFactor: 0.2 },
-  grapes:     { img: '/img/grapes.png',     radius: 40, scaleFactor: 0.2 },
-  dekopon:    { img: '/img/dekopon.png',    radius: 40, scaleFactor: 0.2 },
-  persimmon:  { img: '/img/persimmon.png',  radius: 40, scaleFactor: 0.2 },
-  apple:      { img: '/img/apple.png',      radius: 40, scaleFactor: 0.2 },
-  pear:       { img: '/img/pear.png',       radius: 40, scaleFactor: 0.2 },
-  peach:      { img: '/img/peach.png',      radius: 40, scaleFactor: 0.2 },
-  pineapple:  { img: '/img/pineapple.png',  radius: 40, scaleFactor: 0.2 },
-  melon:      { img: '/img/melon.png',      radius: 40, scaleFactor: 0.2 },
-  watermelon: { img: '/img/watermelon.png', radius: 40, scaleFactor: 0.2 },
+  cherry:     { img: '/img/cherry.png',     radius: 40, scaleFactor: 0.2, selectionProbability: 0.1},
+  strawberry: { img: '/img/strawberry.png', radius: 40, scaleFactor: 0.2, selectionProbability: 0.1},
+  grapes:     { img: '/img/grapes.png',     radius: 40, scaleFactor: 0.2, selectionProbability: 0.1 },
+  dekopon:    { img: '/img/dekopon.png',    radius: 40, scaleFactor: 0.2, selectionProbability: 0.1 },
+  persimmon:  { img: '/img/persimmon.png',  radius: 40, scaleFactor: 0.2, selectionProbability: 0.1 },
+  apple:      { img: '/img/apple.png',      radius: 40, scaleFactor: 0.2, selectionProbability: 0.1 },
+  pear:       { img: '/img/pear.png',       radius: 40, scaleFactor: 0.2, selectionProbability: 0.1 },
+  peach:      { img: '/img/peach.png',      radius: 40, scaleFactor: 0.2, selectionProbability: 0.1 },
+  pineapple:  { img: '/img/pineapple.png',  radius: 40, scaleFactor: 0.2, selectionProbability: 0.1 },
+  melon:      { img: '/img/melon.png',      radius: 40, scaleFactor: 0.2, selectionProbability: 0.1 },
+  watermelon: { img: '/img/watermelon.png', radius: 40, scaleFactor: 0.2, selectionProbability: 0.1 },
 };
 
 const game = ref<HTMLElement | null>(null);
@@ -39,6 +40,7 @@ let currentFruit: Matter.Body | null = null;
 let spawnInterval: ReturnType<typeof setInterval>;
 
 function selectRandomFruit() {
+  
 }
 
 function createNewFallingFruit() {
