@@ -21,7 +21,15 @@ type fallingfruit = {
   //to do: figure out how to do hitboxes
   //type isnt used rn bc we don't have the actual assets yet but we'll use the type to determine the hitbox
 }
-type fallingFruits = fallingfruit[]
+type fruitType = {
+  name: string,
+  img: string,
+  hitbox: string, //change to proper data type after making them
+  scaleFactor: number
+}
+const fruitTypes: fruitType[] = [
+
+] 
 export default defineComponent({
   setup() {
     const game = ref<HTMLElement | null>(null);
@@ -51,17 +59,28 @@ export default defineComponent({
       const rightWall = Bodies.rectangle(785, 200, 20, 1160, { isStatic: true });
       const containerTop = Bodies.rectangle(397, 70, 755, 20, { isStatic: true, isSensor: true, render: {fillStyle: 'red', opacity: 0.3}})
 
-      function createNewFallingFruit() {
+      function createNewFallingFruit(type) {
         const fruit = Bodies.circle(380, 140, 40, {
         restitution: 0.5,
         render: {
             sprite: {
-                texture: '/public/img/circle0.png',
+                texture: type,
                 xScale: 0.2,
                 yScale: 0.2
             }
         }
     });
+      /* Cherry
+      Strawberry
+      Grapes
+      Dekopon (Citrus)
+      Persimmon
+      Apple
+      Pear
+      Peach
+      Pineapple
+      Melon
+      Watermelon*/
         Composite.add(engine.world, fruit);
         return fruit
       }
