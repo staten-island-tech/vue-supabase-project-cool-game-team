@@ -7,6 +7,10 @@ const { error } = await supabase.auth.verifyOtp({
   token_hash: hash,
   type: 'email',
 })
+
+if(error!){
+  await navigateTo('/error', {redirectCode: 401})
+}
 </script>
 
 <template>
