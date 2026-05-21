@@ -1,5 +1,5 @@
 <template>
-  <div ref="game" />
+  <div ref="game"/>
 </template>
 
 <script setup lang="ts">
@@ -18,17 +18,17 @@ type FruitType = {
 };
 
 const fruitTypes: Record<string, FruitType> = {
-  cherry:     { img: '/img/cherry.png',     radius: 40, scaleFactor: 0.2, selectionProbability: 0.1},
-  strawberry: { img: '/img/strawberry.png', radius: 40, scaleFactor: 0.2, selectionProbability: 0.1},
-  grapes:     { img: '/img/grapes.png',     radius: 40, scaleFactor: 0.2, selectionProbability: 0.1 },
-  dekopon:    { img: '/img/dekopon.png',    radius: 40, scaleFactor: 0.2, selectionProbability: 0.1 },
-  persimmon:  { img: '/img/persimmon.png',  radius: 40, scaleFactor: 0.2, selectionProbability: 0.1 },
-  apple:      { img: '/img/apple.png',      radius: 40, scaleFactor: 0.2, selectionProbability: 0.1 },
+  cherry:     { img: '/img/cherry.png',     radius: 40, scaleFactor: 0.2, selectionProbability: 0 },
+  strawberry: { img: '/img/strawberry.png', radius: 40, scaleFactor: 0.2, selectionProbability: 0 },
+  grapes:     { img: '/img/grapes.png',     radius: 40, scaleFactor: 0.2, selectionProbability: 0 },
+  dekopon:    { img: '/img/dekopon.png',    radius: 40, scaleFactor: 0.2, selectionProbability: 0 },
+  persimmon:  { img: '/img/persimmon.png',  radius: 40, scaleFactor: 0.2, selectionProbability: 0 },
+  apple:      { img: '/img/apple.png',      radius: 40, scaleFactor: 0.2, selectionProbability: 0 },
   pear:       { img: '/img/pear.png',       radius: 40, scaleFactor: 0.2, selectionProbability: 0.1 },
   peach:      { img: '/img/peach.png',      radius: 40, scaleFactor: 0.2, selectionProbability: 0.1 },
   pineapple:  { img: '/img/pineapple.png',  radius: 40, scaleFactor: 0.2, selectionProbability: 0.1 },
   melon:      { img: '/img/melon.png',      radius: 40, scaleFactor: 0.2, selectionProbability: 0.1 },
-  watermelon: { img: '/img/watermelon.png', radius: 40, scaleFactor: 0.2, selectionProbability: 0.1 },
+  watermelon: { img: '/img/watermelon.png', radius: 40, scaleFactor: 0.2, selectionProbability: 0.6 },
 };
 
 const game = ref<HTMLElement | null>(null);
@@ -40,9 +40,18 @@ let currentFruit: Matter.Body | null = null;
 let spawnInterval: ReturnType<typeof setInterval>;
 
 function selectRandomFruit() {
-  
+  let random = Math.random() 
+  let sum = 0
+  for (const fruit in fruitTypes) {
+    const fruitName = Object.keys(fruitTypes[fruit])[0]
+    console.log(fruitName)
+    if (random < sum) {
+      console.log(fruitTypes[fruit])
+    }
+  }
 }
 
+selectRandomFruit()
 function createNewFallingFruit() {
   const type = selectRandomFruit();
   const fruit = Bodies.circle(380, 140, type.radius, {
@@ -97,7 +106,7 @@ onMounted(() => {
     event.pairs.forEach((pair) => {
       const labels = [pair.bodyA.label, pair.bodyB.label];
       if (labels.includes('Circle Body') && labels.includes('Rectangle Body')) {
-        // navigateTo('/lose')
+        navigateTo('/lose')
       }
     });
   });
