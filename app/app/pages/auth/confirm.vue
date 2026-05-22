@@ -3,12 +3,15 @@
 definePageMeta({ ssr: false });
 const supabase = useSupabaseClient();
 const hash = useRoute().query.token as string
+if(!hash){
+  await navigateTo('/error', {redirectCode: 401})
+}
 const { error } = await supabase.auth.verifyOtp({
   token_hash: hash,
   type: 'email',
 })
 
-if(error!){
+if(error){
   await navigateTo('/error', {redirectCode: 401})
 }
 </script>

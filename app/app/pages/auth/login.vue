@@ -11,7 +11,7 @@ async function logInRequest() {
       email: email.value,
       options: {
         shouldCreateUser: true,
-        emailRedirectTo: `${window.location.origin}/home`
+        emailRedirectTo: `${window.location.origin}/account`
       }
     })
   } catch (error){
