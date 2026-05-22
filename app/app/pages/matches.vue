@@ -19,16 +19,15 @@ type FruitType = {
 
 const fruitTypes: Record<string, FruitType> = {
   cherry:     { img: '/img/cherry.png',     radius: 40, scaleFactor: 0.2, selectionProbability: 0 },
-  strawberry: { img: '/img/strawberry.png', radius: 40, scaleFactor: 0.2, selectionProbability: 0 },
-  grapes:     { img: '/img/grapes.png',     radius: 40, scaleFactor: 0.2, selectionProbability: 0 },
-  dekopon:    { img: '/img/dekopon.png',    radius: 40, scaleFactor: 0.2, selectionProbability: 0 },
-  persimmon:  { img: '/img/persimmon.png',  radius: 40, scaleFactor: 0.2, selectionProbability: 0 },
+  strawberry: { img: '/img/strawberry.png', radius: 35, scaleFactor: 0.2, selectionProbability: 0 },
+  grapes:     { img: '/img/grape.png',     radius: 40, scaleFactor: 0.2, selectionProbability: 0 },
+  citrus:    { img: '/img/citrus.png',    radius: 40, scaleFactor: 0.2, selectionProbability: 0 },
   apple:      { img: '/img/apple.png',      radius: 40, scaleFactor: 0.2, selectionProbability: 0 },
   pear:       { img: '/img/pear.png',       radius: 40, scaleFactor: 0.2, selectionProbability: 0.1 },
   peach:      { img: '/img/peach.png',      radius: 40, scaleFactor: 0.2, selectionProbability: 0.1 },
   pineapple:  { img: '/img/pineapple.png',  radius: 40, scaleFactor: 0.2, selectionProbability: 0.1 },
-  melon:      { img: '/img/melon.png',      radius: 40, scaleFactor: 0.2, selectionProbability: 0.1 },
-  watermelon: { img: '/img/watermelon.png', radius: 40, scaleFactor: 0.2, selectionProbability: 0.6 },
+  melon:      { img: '/img/melon.png',      radius: 30, scaleFactor: 0.2, selectionProbability: 0.1 },
+  watermelon: { img: '/img/watermelon.png', radius: 5, scaleFactor: 0.2, selectionProbability: 0.6 },
 };
 
 const game = ref<HTMLElement | null>(null);
@@ -44,7 +43,23 @@ function selectRandomFruit(): FruitType {
   const key = keys[Math.floor(Math.random() * keys.length)]!;
   return fruitTypes[key]!;
 }
-
+async function preloadAllFruits() {
+  await Promise.all(
+    Object.values(fruitTypes).map(
+      (fruit) =>
+        new Promise<void>((resolve) => {
+          const img = new Image();
+          img.onload = () => {
+            resolve();
+          };
+          img.onerror = () => {
+            resolve();
+          };
+          img.src = fruit.img;
+        })
+    )
+  );
+}
 selectRandomFruit()
 function createNewFallingFruit() {
   const type = selectRandomFruit();
@@ -62,11 +77,11 @@ function createNewFallingFruit() {
   return fruit;
 }
 
-onMounted(() => {
+onMounted(async () => {
   if (!game.value) return;
 
   engine = Engine.create();
-
+  await preloadAllFruits();
   render = Render.create({
     element: game.value,
     engine,
@@ -107,7 +122,7 @@ onMounted(() => {
 
   spawnInterval = setInterval(() => {
     currentFruit = createNewFallingFruit();
-  }, 5000);
+  }, 2000);
 
   Render.run(render);
   runner = Runner.create();
