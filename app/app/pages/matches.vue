@@ -39,16 +39,10 @@ let runner: Matter.Runner;
 let currentFruit: Matter.Body | null = null;
 let spawnInterval: ReturnType<typeof setInterval>;
 
-function selectRandomFruit() {
-  let random = Math.random() 
-  let sum = 0
-  for (const fruit in fruitTypes) {
-    const fruitName = Object.keys(fruitTypes[fruit])[0]
-    console.log(fruitName)
-    if (random < sum) {
-      console.log(fruitTypes[fruit])
-    }
-  }
+function selectRandomFruit(): FruitType {
+  const keys = Object.keys(fruitTypes) as (keyof typeof fruitTypes)[];
+  const key = keys[Math.floor(Math.random() * keys.length)]!;
+  return fruitTypes[key]!;
 }
 
 selectRandomFruit()
@@ -106,14 +100,14 @@ onMounted(() => {
     event.pairs.forEach((pair) => {
       const labels = [pair.bodyA.label, pair.bodyB.label];
       if (labels.includes('Circle Body') && labels.includes('Rectangle Body')) {
-        navigateTo('/lose')
+        //navigateTo('/lose')
       }
     });
   });
 
   spawnInterval = setInterval(() => {
     currentFruit = createNewFallingFruit();
-  }, 2000);
+  }, 5000);
 
   Render.run(render);
   runner = Runner.create();
