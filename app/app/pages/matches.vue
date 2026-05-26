@@ -18,16 +18,16 @@ type FruitType = {
 };
 
 const fruitTypes: Record<string, FruitType> = {
-  cherry:     { img: '/img/cherry.png',     radius: 40, scaleFactor: 0.2, selectionProbability: 0 },
-  strawberry: { img: '/img/strawberry.png', radius: 35, scaleFactor: 0.2, selectionProbability: 0 },
-  grapes:     { img: '/img/grape.png',     radius: 40, scaleFactor: 0.2, selectionProbability: 0 },
-  citrus:    { img: '/img/citrus.png',    radius: 40, scaleFactor: 0.2, selectionProbability: 0 },
-  apple:      { img: '/img/apple.png',      radius: 40, scaleFactor: 0.2, selectionProbability: 0 },
-  pear:       { img: '/img/pear.png',       radius: 40, scaleFactor: 0.2, selectionProbability: 0.1 },
-  peach:      { img: '/img/peach.png',      radius: 40, scaleFactor: 0.2, selectionProbability: 0.1 },
-  pineapple:  { img: '/img/pineapple.png',  radius: 40, scaleFactor: 0.2, selectionProbability: 0.1 },
-  melon:      { img: '/img/melon.png',      radius: 30, scaleFactor: 0.2, selectionProbability: 0.1 },
-  watermelon: { img: '/img/watermelon.png', radius: 5, scaleFactor: 0.2, selectionProbability: 0.6 },
+  cherry:     { img: '/img/cherry.png',     radius: 40, scaleFactor: 0.40, selectionProbability: 0 },
+  strawberry: { img: '/img/strawberry.png', radius: 36, scaleFactor: 0.36, selectionProbability: 0 },
+  grapes:     { img: '/img/grape.png',      radius: 32, scaleFactor: 0.32, selectionProbability: 0 },
+  citrus:     { img: '/img/citrus.png',     radius: 28, scaleFactor: 0.28, selectionProbability: 0 },
+  apple:      { img: '/img/apple.png',      radius: 24, scaleFactor: 0.24, selectionProbability: 0 },
+  pear:       { img: '/img/pear.png',       radius: 20, scaleFactor: 0.20, selectionProbability: 0.1 },
+  peach:      { img: '/img/peach.png',      radius: 17, scaleFactor: 0.17, selectionProbability: 0.1 },
+  pineapple:  { img: '/img/pineapple.png',  radius: 13, scaleFactor: 0.13, selectionProbability: 0.1 },
+  melon:      { img: '/img/melon.png',      radius: 9,  scaleFactor: 0.09, selectionProbability: 0.1 },
+  watermelon: { img: '/img/watermelon.png', radius: 5,  scaleFactor: 0.05, selectionProbability: 0.6 },
 };
 
 const game = ref<HTMLElement | null>(null);
@@ -113,6 +113,7 @@ onMounted(async () => {
 
   Matter.Events.on(engine, 'collisionStart', (event) => {
     event.pairs.forEach((pair) => {
+      console.log(event)
       const labels = [pair.bodyA.label, pair.bodyB.label];
       if (labels.includes('Circle Body') && labels.includes('Rectangle Body')) {
         //navigateTo('/lose')
