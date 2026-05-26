@@ -11,8 +11,8 @@
         </div>
         <div class="flex f">
             <h1 class="text-4xl font-extrabold text-base-content">
-          Welcome to
-          <span class="text-primary">Knock Off Multiplayer Suika Game</span>
+          Welcome to Knock Off 
+          <span class="text-primary">Multiplayer Suika Game</span>
         </h1>
         </div>
 
