@@ -18,16 +18,16 @@ type FruitType = {
 };
 
 const fruitTypes: Record<string, FruitType> = {
-  cherry:     { img: '/img/cherry.png',     radius: 40, scaleFactor: 0.40, selectionProbability: 0 },
-  strawberry: { img: '/img/strawberry.png', radius: 36, scaleFactor: 0.36, selectionProbability: 0 },
-  grapes:     { img: '/img/grape.png',      radius: 32, scaleFactor: 0.32, selectionProbability: 0 },
-  citrus:     { img: '/img/citrus.png',     radius: 28, scaleFactor: 0.28, selectionProbability: 0 },
+  cherry:     { img: '/img/cherry.png',     radius: 40, scaleFactor: 0.40, selectionProbability: 0.6 },
+  strawberry: { img: '/img/strawberry.png', radius: 36, scaleFactor: 0.36, selectionProbability: 0.1 },
+  grapes:     { img: '/img/grape.png',      radius: 32, scaleFactor: 0.32, selectionProbability: 0.1 },
+  citrus:     { img: '/img/citrus.png',     radius: 28, scaleFactor: 0.28, selectionProbability: 0.1 },
   apple:      { img: '/img/apple.png',      radius: 24, scaleFactor: 0.24, selectionProbability: 0 },
-  pear:       { img: '/img/pear.png',       radius: 20, scaleFactor: 0.20, selectionProbability: 0.1 },
-  peach:      { img: '/img/peach.png',      radius: 17, scaleFactor: 0.17, selectionProbability: 0.1 },
-  pineapple:  { img: '/img/pineapple.png',  radius: 13, scaleFactor: 0.13, selectionProbability: 0.1 },
-  melon:      { img: '/img/melon.png',      radius: 9,  scaleFactor: 0.09, selectionProbability: 0.1 },
-  watermelon: { img: '/img/watermelon.png', radius: 5,  scaleFactor: 0.05, selectionProbability: 0.6 },
+  pear:       { img: '/img/pear.png',       radius: 20, scaleFactor: 0.20, selectionProbability: 0},
+  peach:      { img: '/img/peach.png',      radius: 17, scaleFactor: 0.17, selectionProbability: 0},
+  pineapple:  { img: '/img/pineapple.png',  radius: 13, scaleFactor: 0.13, selectionProbability: 0},
+  melon:      { img: '/img/melon.png',      radius: 9,  scaleFactor: 0.09, selectionProbability: 0},
+  watermelon: { img: '/img/watermelon.png', radius: 5,  scaleFactor: 0.05, selectionProbability: 0},
 };
 
 const game = ref<HTMLElement | null>(null);
@@ -51,6 +51,8 @@ async function preloadAllFruits() {
           const img = new Image();
           img.onload = () => {
             resolve();
+            console.log(`${fruit.img}: ${img.naturalWidth}x${img.naturalHeight} → scaleFactor: ${fruit.scaleFactor}`);
+            resolve();
           };
           img.onerror = () => {
             resolve();
@@ -73,6 +75,10 @@ function createNewFallingFruit() {
       },
     },
   });
+  fruit.label = type.img.slice(5, -4) 
+  //should i have to resort to this convoluted method for getting fruit name?
+  // no but i structured the data weirdly :sob
+
   Composite.add(engine.world, fruit);
   return fruit;
 }
@@ -81,6 +87,7 @@ onMounted(async () => {
   if (!game.value) return;
 
   engine = Engine.create();
+
   await preloadAllFruits();
   render = Render.create({
     element: game.value,
@@ -113,10 +120,11 @@ onMounted(async () => {
 
   Matter.Events.on(engine, 'collisionStart', (event) => {
     event.pairs.forEach((pair) => {
-      console.log(event)
       const labels = [pair.bodyA.label, pair.bodyB.label];
       if (labels.includes('Circle Body') && labels.includes('Rectangle Body')) {
         //navigateTo('/lose')
+      } else if (labels[0] === labels[1]) {
+        console.log('fuseee')
       }
     });
   });
