@@ -12,8 +12,8 @@
   "dependencies": {
     "@nuxt/eslint": "^1.15.2",
     "@nuxtjs/supabase": "^2.0.6",
-    "@tailwindcss/postcss": "^4.2.4",
-    "@tailwindcss/vite": "^4.2.4",
+    "@supabase/supabase-js": "^2.105.1",
+    "@tailwindcss/vite": "^4.3.0",
     "daisyui": "^5.5.19",
     "eslint": "^10.2.1",
     "jsdoc": "^4.0.5",
@@ -26,6 +26,8 @@
     "vue-router": "^5.0.6"
   },
   "devDependencies": {
+    "@types/matter-js": "^0.20.2",
+    "supabase": "^2.95.6",
     "typescript": "^6.0.3"
   }
 }

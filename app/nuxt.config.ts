@@ -1,7 +1,8 @@
 import tailwindcss from "@tailwindcss/vite";
 export default defineNuxtConfig({
+  ssr: false,
   vite: {
-    plugins: [tailwindcss() as any],
+    plugins: [tailwindcss()],
   },
   css: ['~/assets/css/main.css'],
   compatibilityDate: '2025-07-15',
@@ -18,7 +19,7 @@ export default defineNuxtConfig({
       login: '/auth/login',
       callback: '/auth/confirm',
       include: undefined,
-      exclude: ['/auth/**'],
+      exclude: ['/auth/**', '/'],
       saveRedirectToCookie: true
     }
   }
