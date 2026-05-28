@@ -126,10 +126,16 @@ onMounted(async () => {
     event.pairs.forEach((pair) => {
       const labels = [pair.bodyA.label, pair.bodyB.label];
       if (labels.includes('Circle Body') && labels.includes('Rectangle Body')) {
-        //navigateTo('/lose')
-      } else if (labels[0] === labels[1]) {
-        Matter.Composite.remove(engine.world, pair)
-        console.log('fuseee')
+      } else if (pair.bodyA.label === pair.bodyB.label) {
+        console.log('fuse')
+        const firstBodyToRemove = Matter.Composite.allBodies(engine.world).find(body => body.id === pair.bodyA.id);
+        const secondBodyToRemove = Matter.Composite.allBodies(engine.world).find(body => body.id === pair.bodyB.id);
+        console.log(pair.bodyB.id)
+        console.log(secondBodyToRemove, firstBodyToRemove)
+        if (firstBodyToRemove || secondBodyToRemove) {
+          Matter.Composite.remove(engine.world, firstBodyToRemove);
+          Matter.Composite.remove(engine.world, secondBodyToRemove)
+        }
       }
     });
   });
