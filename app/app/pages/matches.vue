@@ -18,10 +18,10 @@ type FruitType = {
 };
 
 const fruitTypes: Record<string, FruitType> = {
-  cherry:     { img: '/img/cherry.png',     radius: 40, scaleFactor: 0.40, selectionProbability: 0.6 },
-  strawberry: { img: '/img/strawberry.png', radius: 36, scaleFactor: 0.36, selectionProbability: 0.1 },
-  grapes:     { img: '/img/grape.png',      radius: 32, scaleFactor: 0.32, selectionProbability: 0.1 },
-  citrus:     { img: '/img/citrus.png',     radius: 28, scaleFactor: 0.28, selectionProbability: 0.1 },
+  cherry:     { img: '/img/cherry.png',     radius: 40, scaleFactor: 0.40, selectionProbability: 1},
+  strawberry: { img: '/img/strawberry.png', radius: 36, scaleFactor: 0.36, selectionProbability: 0 },
+  grapes:     { img: '/img/grape.png',      radius: 32, scaleFactor: 0.32, selectionProbability: 0 },
+  citrus:     { img: '/img/citrus.png',     radius: 28, scaleFactor: 0.28, selectionProbability: 0 },
   apple:      { img: '/img/apple.png',      radius: 24, scaleFactor: 0.24, selectionProbability: 0 },
   pear:       { img: '/img/pear.png',       radius: 20, scaleFactor: 0.20, selectionProbability: 0},
   peach:      { img: '/img/peach.png',      radius: 17, scaleFactor: 0.17, selectionProbability: 0},
@@ -38,11 +38,15 @@ let runner: Matter.Runner;
 let currentFruit: Matter.Body | null = null;
 let spawnInterval: ReturnType<typeof setInterval>;
 
-function selectRandomFruit(): FruitType {
-  const keys = Object.keys(fruitTypes) as (keyof typeof fruitTypes)[];
-  const key = keys[Math.floor(Math.random() * keys.length)]!;
-  return fruitTypes[key]!;
+function selectRandomFruit(): FruitType | undefined {
+  const random = Math.random();
+  let sum = 0;
+  for (const fruit of Object.values(fruitTypes)) {
+    sum += fruit.selectionProbability;
+    if (random < sum) return fruit;
+  }
 }
+
 async function preloadAllFruits() {
   await Promise.all(
     Object.values(fruitTypes).map(
@@ -124,6 +128,7 @@ onMounted(async () => {
       if (labels.includes('Circle Body') && labels.includes('Rectangle Body')) {
         //navigateTo('/lose')
       } else if (labels[0] === labels[1]) {
+        Matter.Composite.remove(engine.world, pair)
         console.log('fuseee')
       }
     });
