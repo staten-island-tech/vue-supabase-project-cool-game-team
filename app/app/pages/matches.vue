@@ -8,7 +8,7 @@ import { defineComponent, ref, onMounted, onBeforeUnmount} from "vue";
 import Matter from "matter-js";
 
 //definePageMeta({ ssr: false });
-definePageMeta({ ssr: false });
+definePageMeta({ ssr: false});
 
 const { Engine, Render, Runner, Bodies, World, Composite } = Matter;
 
