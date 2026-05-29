@@ -20,7 +20,7 @@ type FruitType = {
 const fruitTypes: Record<string, FruitType> = {
   cherry:     { img: '/img/cherry.png',     radius: 40, scaleFactor: 0.40, selectionProbability: 1},
   strawberry: { img: '/img/strawberry.png', radius: 36, scaleFactor: 0.36, selectionProbability: 0 },
-  grapes:     { img: '/img/grape.png',      radius: 32, scaleFactor: 0.32, selectionProbability: 0 },
+  grape:     { img: '/img/grape.png',      radius: 32, scaleFactor: 0.32, selectionProbability: 0 },
   citrus:     { img: '/img/citrus.png',     radius: 28, scaleFactor: 0.28, selectionProbability: 0 },
   apple:      { img: '/img/apple.png',      radius: 24, scaleFactor: 0.24, selectionProbability: 0 },
   pear:       { img: '/img/pear.png',       radius: 20, scaleFactor: 0.20, selectionProbability: 0},
@@ -67,9 +67,9 @@ async function preloadAllFruits() {
   );
 }
 selectRandomFruit()
-function createNewFallingFruit() {
-  const type = selectRandomFruit();
-  const fruit = Bodies.circle(380, 140, type.radius, {
+function createNewFruit(x = 380, y = 140, type = selectRandomFruit()) {
+  //default falling x = 380, y = 140
+  const fruit = Bodies.circle(x, y, type.radius, {
     restitution: 0.5,
     render: {
       sprite: {
@@ -127,22 +127,27 @@ onMounted(async () => {
       const labels = [pair.bodyA.label, pair.bodyB.label];
       if (labels.includes('Circle Body') && labels.includes('Rectangle Body')) {
       } else if (pair.bodyA.label === pair.bodyB.label) {
-        console.log('fuse')
         const firstBodyToRemove = Matter.Composite.allBodies(engine.world).find(body => body.id === pair.bodyA.id);
         const secondBodyToRemove = Matter.Composite.allBodies(engine.world).find(body => body.id === pair.bodyB.id);
-        console.log(pair.bodyB.id)
-        console.log(secondBodyToRemove, firstBodyToRemove)
         if (firstBodyToRemove || secondBodyToRemove) {
+          const fruitTypesArray = Object.entries(fruitTypes);
+          const index = fruitTypesArray.findIndex(([name]) => name === pair.bodyA.label);
+          const nextFruit = fruitTypesArray[index + 1]; 
+            
+          const newFruitX = (firstBodyToRemove?.position.x + secondBodyToRemove?.position.x)/2
+          const newFruitY = (firstBodyToRemove?.position.y + secondBodyToRemove?.position.y)/2
+          createNewFruit(newFruitX, newFruitY, nextFruit[1])
           Matter.Composite.remove(engine.world, firstBodyToRemove);
           Matter.Composite.remove(engine.world, secondBodyToRemove)
         }
+        
       }
     });
   });
 
   spawnInterval = setInterval(() => {
-    currentFruit = createNewFallingFruit();
-  }, 2000);
+    currentFruit = createNewFruit();
+  }, 500);
 
   Render.run(render);
   runner = Runner.create();
