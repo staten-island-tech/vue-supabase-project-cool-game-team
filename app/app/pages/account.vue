@@ -29,6 +29,7 @@
 </template>
 
 <script setup>
+definePageMeta({middleware: 'auth'})
 const supabase = useSupabaseClient()
 const user_data = await supabase.auth.getUser()
 const username = user_data['data']['user']['email'].split('@')[0]
