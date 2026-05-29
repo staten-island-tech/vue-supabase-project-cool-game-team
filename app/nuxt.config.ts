@@ -9,17 +9,10 @@ export default defineNuxtConfig({
   pages: true,
   modules: [
     '@nuxtjs/supabase',
-    '@nuxt/eslint'
+    '@nuxt/eslint',
   ],
   supabase: {
     url: process.env.SUPABASE_URL,
     key: process.env.SUPABASE_PUBLISHABLE_KEY,
-    redirectOptions: {
-      login: '/auth/login',
-      callback: '/auth/confirm',
-      include: undefined,
-      exclude: ['/auth/**', '/lose', '/matches'],
-      saveRedirectToCookie: true
-    }
   }
 })
