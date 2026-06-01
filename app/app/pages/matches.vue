@@ -13,21 +13,20 @@ const { Engine, Render, Runner, Bodies, World, Composite } = Matter;
 type FruitType = {
   img: string;
   radius: number;
-  scaleFactor: number;
   selectionProbability: number;
 };
 
 const fruitTypes: Record<string, FruitType> = {
-  cherry:     { img: '/img/cherry.png',     radius: 40, scaleFactor: 0.40, selectionProbability: 1},
-  strawberry: { img: '/img/strawberry.png', radius: 36, scaleFactor: 0.36, selectionProbability: 0 },
-  grape:     { img: '/img/grape.png',      radius: 32, scaleFactor: 0.32, selectionProbability: 0 },
-  citrus:     { img: '/img/citrus.png',     radius: 28, scaleFactor: 0.28, selectionProbability: 0 },
-  apple:      { img: '/img/apple.png',      radius: 24, scaleFactor: 0.24, selectionProbability: 0 },
-  pear:       { img: '/img/pear.png',       radius: 20, scaleFactor: 0.20, selectionProbability: 0},
-  peach:      { img: '/img/peach.png',      radius: 17, scaleFactor: 0.17, selectionProbability: 0},
-  pineapple:  { img: '/img/pineapple.png',  radius: 13, scaleFactor: 0.13, selectionProbability: 0},
-  melon:      { img: '/img/melon.png',      radius: 9,  scaleFactor: 0.09, selectionProbability: 0},
-  watermelon: { img: '/img/watermelon.png', radius: 5,  scaleFactor: 0.05, selectionProbability: 0},
+  cherry:     { img: '/img/cherry.png',     radius: 170, selectionProbability: 1 },
+  strawberry: { img: '/img/strawberry.png', radius: 145, selectionProbability: 0 },
+  grape:      { img: '/img/grape.png',      radius: 120, selectionProbability: 0 },
+  citrus:     { img: '/img/citrus.png',     radius: 100, selectionProbability: 0 },
+  apple:      { img: '/img/apple.png',      radius: 85,  selectionProbability: 0 },
+  pear:       { img: '/img/pear.png',       radius: 70,  selectionProbability: 0 },
+  peach:      { img: '/img/peach.png',      radius: 55,  selectionProbability: 0 },
+  pineapple:  { img: '/img/pineapple.png',  radius: 40,  selectionProbability: 0 },
+  melon:      { img: '/img/melon.png',      radius: 30,  selectionProbability: 0 },
+  watermelon: { img: '/img/watermelon.png', radius: 20,  selectionProbability: 0 },
 };
 
 const game = ref<HTMLElement | null>(null);
@@ -47,6 +46,17 @@ function selectRandomFruit(): FruitType | undefined {
   }
 }
 
+function fruitRadiusAndScale() {
+  for (const fruit of Object.values(fruitTypes)) {
+    console.log(fruit.img)
+    const defaultSize = 1024 //px
+    const scaleFactor = (fruit.radius*2)/defaultSize;
+    console.log(scaleFactor)
+  }
+  //scale factor obeys radius
+  
+}
+fruitRadiusAndScale()
 async function preloadAllFruits() {
   await Promise.all(
     Object.values(fruitTypes).map(
@@ -54,8 +64,7 @@ async function preloadAllFruits() {
         new Promise<void>((resolve) => {
           const img = new Image();
           img.onload = () => {
-            resolve();
-            console.log(`${fruit.img}: ${img.naturalWidth}x${img.naturalHeight} → scaleFactor: ${fruit.scaleFactor}`);
+            fruit.scaleFactor = (fruit.radius * 2) / img.naturalWidth;
             resolve();
           };
           img.onerror = () => {
@@ -147,7 +156,7 @@ onMounted(async () => {
 
   spawnInterval = setInterval(() => {
     currentFruit = createNewFruit();
-  }, 500);
+  }, 1000);
 
   Render.run(render);
   runner = Runner.create();
