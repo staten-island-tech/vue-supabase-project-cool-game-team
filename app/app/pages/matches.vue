@@ -80,8 +80,7 @@ function createNewFruit(x = 380, y = 140, type = selectRandomFruit()) {
   });
   fruit.label = type.img.slice(5, -4) 
   //should i have to resort to this convoluted method for getting fruit name?
-  // no but i structured the data weirdly :sob
-
+  // no but i structured the data weirdly :sob:
   Composite.add(engine.world, fruit);
   return fruit;
 }
@@ -109,6 +108,7 @@ onMounted(async () => {
     isStatic: true,
     isSensor: true,
     render: { fillStyle: 'red', opacity: 0.3 },
+    label: 'lose'
   });
 
   World.add(engine.world, [ground, leftWall, rightWall, containerTop]);
@@ -124,7 +124,9 @@ onMounted(async () => {
   Matter.Events.on(engine, 'collisionStart', (event) => {
     event.pairs.forEach((pair) => {
       const labels = [pair.bodyA.label, pair.bodyB.label];
-      if (labels.includes('Circle Body') && labels.includes('Rectangle Body')) {
+      const fruitLabels = Object.keys(fruitTypes)
+
+      if (labels.includes('Circle Body') && labels.some(l => fruitLabels.includes(l))) {
         navigateTo('/lose')
         console.log('lose')
       } else if (pair.bodyA.label === pair.bodyB.label) {
