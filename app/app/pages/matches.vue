@@ -13,6 +13,7 @@ const { Engine, Render, Runner, Bodies, World, Composite } = Matter;
 type FruitType = {
   img: string;
   radius: number;
+  scaleFactor?: number;
   selectionProbability: number;
 };
 
@@ -46,17 +47,6 @@ function selectRandomFruit(): FruitType | undefined {
   }
 }
 
-function fruitRadiusAndScale() {
-  for (const fruit of Object.values(fruitTypes)) {
-    console.log(fruit.img)
-    const defaultSize = 1024 //px
-    const scaleFactor = (fruit.radius*2)/defaultSize;
-    console.log(scaleFactor)
-  }
-  //scale factor obeys radius
-  
-}
-fruitRadiusAndScale()
 async function preloadAllFruits() {
   await Promise.all(
     Object.values(fruitTypes).map(
@@ -135,6 +125,8 @@ onMounted(async () => {
     event.pairs.forEach((pair) => {
       const labels = [pair.bodyA.label, pair.bodyB.label];
       if (labels.includes('Circle Body') && labels.includes('Rectangle Body')) {
+        navigateTo('/lose')
+        console.log('lose')
       } else if (pair.bodyA.label === pair.bodyB.label) {
         const firstBodyToRemove = Matter.Composite.allBodies(engine.world).find(body => body.id === pair.bodyA.id);
         const secondBodyToRemove = Matter.Composite.allBodies(engine.world).find(body => body.id === pair.bodyB.id);
@@ -156,7 +148,7 @@ onMounted(async () => {
 
   spawnInterval = setInterval(() => {
     currentFruit = createNewFruit();
-  }, 1000);
+  }, 200);
 
   Render.run(render);
   runner = Runner.create();
