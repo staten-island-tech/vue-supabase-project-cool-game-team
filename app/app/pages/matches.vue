@@ -36,7 +36,7 @@ let engine: Matter.Engine;
 let render: Matter.Render;
 let runner: Matter.Runner;
 let currentFruit: Matter.Body | null = null;
-let spawnInterval: ReturnType<typeof setInterval>;
+let spawnIntervalChange: ReturnType<typeof setInterval>;
 
 function selectRandomFruit(): FruitType | undefined {
   const random = Math.random();
@@ -85,7 +85,20 @@ function createNewFruit(x = 380, y = 250, type = selectRandomFruit()) {
   return fruit;
 }
 
+const spawnStartInterval = 2000; // ms
+const spawnMinInterval = 500;    // ms
+const speedStepInterval = 10000; // decrease every 10s
+const spawnDecreaseAmount = 100; // ms reduction per step
 
+let spawnInterval = spawnStartInterval;
+let gameStartTime = Date.now();
+
+function getCurrentSpawnInterval(): number {
+  const elapsed = Date.now() - gameStartTime;
+  const steps = Math.floor(elapsed / speedStepInterval);
+  const reduced = spawnStartInterval - steps * spawnDecreaseAmount;
+  return Math.max(reduced, spawnMinInterval);
+}
 
 onMounted(async () => {
   if (!game.value) return;
@@ -149,9 +162,11 @@ onMounted(async () => {
     });
   });
 
-  spawnInterval = setInterval(() => {
+  spawnIntervalChange = setInterval(() => {
+    spawnInterval = getCurrentSpawnInterval();
+    console.log(spawnInterval)
     currentFruit = createNewFruit();
-  }, 1000);
+  }, spawnInterval);
 
   Render.run(render);
   runner = Runner.create();
@@ -163,7 +178,7 @@ onMounted(async () => {
 });
 
 onBeforeUnmount(() => {
-  clearInterval(spawnInterval);
+  clearInterval(spawnIntervalChange);
   if (render) Render.stop(render);
   if (runner) Runner.stop(runner);
   if (engine) Engine.clear(engine);
