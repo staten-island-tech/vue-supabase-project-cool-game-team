@@ -18,16 +18,16 @@ type FruitType = {
 };
 
 const fruitTypes: Record<string, FruitType> = {
-  cherry:     { img: '/img/cherry.png',     radius: 170, selectionProbability: 1 },
-  strawberry: { img: '/img/strawberry.png', radius: 145, selectionProbability: 0 },
-  grape:      { img: '/img/grape.png',      radius: 120, selectionProbability: 0 },
-  citrus:     { img: '/img/citrus.png',     radius: 100, selectionProbability: 0 },
-  apple:      { img: '/img/apple.png',      radius: 85,  selectionProbability: 0 },
-  pear:       { img: '/img/pear.png',       radius: 70,  selectionProbability: 0 },
-  peach:      { img: '/img/peach.png',      radius: 55,  selectionProbability: 0 },
-  pineapple:  { img: '/img/pineapple.png',  radius: 40,  selectionProbability: 0 },
-  melon:      { img: '/img/melon.png',      radius: 30,  selectionProbability: 0 },
-  watermelon: { img: '/img/watermelon.png', radius: 20,  selectionProbability: 0 },
+  cherry:     { img: '/img/cherry.png',     radius: 120, selectionProbability: 1 },
+  strawberry: { img: '/img/strawberry.png', radius: 100, selectionProbability: 0 },
+  grape:      { img: '/img/grape.png',      radius: 80, selectionProbability: 0 },
+  citrus:     { img: '/img/citrus.png',     radius: 60, selectionProbability: 0 },
+  apple:      { img: '/img/apple.png',      radius: 50,  selectionProbability: 0 },
+  pear:       { img: '/img/pear.png',       radius: 40,  selectionProbability: 0 },
+  peach:      { img: '/img/peach.png',      radius: 30,  selectionProbability: 0 },
+  pineapple:  { img: '/img/pineapple.png',  radius: 25,  selectionProbability: 0 },
+  melon:      { img: '/img/melon.png',      radius: 15,  selectionProbability: 0 },
+  watermelon: { img: '/img/watermelon.png', radius: 10,  selectionProbability: 0 },
 };
 
 const game = ref<HTMLElement | null>(null);
@@ -66,7 +66,7 @@ async function preloadAllFruits() {
   );
 }
 selectRandomFruit()
-function createNewFruit(x = 380, y = 140, type = selectRandomFruit()) {
+function createNewFruit(x = 380, y = 250, type = selectRandomFruit()) {
   //default falling x = 380, y = 140
   const fruit = Bodies.circle(x, y, type.radius, {
     restitution: 0.5,
@@ -84,6 +84,8 @@ function createNewFruit(x = 380, y = 140, type = selectRandomFruit()) {
   Composite.add(engine.world, fruit);
   return fruit;
 }
+
+
 
 onMounted(async () => {
   if (!game.value) return;
@@ -126,9 +128,8 @@ onMounted(async () => {
       const labels = [pair.bodyA.label, pair.bodyB.label];
       const fruitLabels = Object.keys(fruitTypes)
 
-      if (labels.includes('Circle Body') && labels.some(l => fruitLabels.includes(l))) {
-        navigateTo('/lose')
-        console.log('lose')
+      if (labels.includes('lose') && labels.some(l => fruitLabels.includes(l))) {
+        //navigateTo('/lose')
       } else if (pair.bodyA.label === pair.bodyB.label) {
         const firstBodyToRemove = Matter.Composite.allBodies(engine.world).find(body => body.id === pair.bodyA.id);
         const secondBodyToRemove = Matter.Composite.allBodies(engine.world).find(body => body.id === pair.bodyB.id);
@@ -150,7 +151,7 @@ onMounted(async () => {
 
   spawnInterval = setInterval(() => {
     currentFruit = createNewFruit();
-  }, 200);
+  }, 1000);
 
   Render.run(render);
   runner = Runner.create();
