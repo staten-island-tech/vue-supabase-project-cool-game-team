@@ -13,8 +13,9 @@ async function joinMatch(uuid) {
     if(data[0].length > 1) {
         return 'error'
     } else {
-        // update to add user to match list
-    } 
+        new_Data = data[0].players.p2 = user.uuid;
+        await supabase.from('matches').select('players').eq('uuid', uuid).update(new_Data)
+}
 }
 </script>
 
