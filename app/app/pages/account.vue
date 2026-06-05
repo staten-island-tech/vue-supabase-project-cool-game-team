@@ -54,12 +54,17 @@
 <script setup>
 definePageMeta({ middleware: 'auth' })
 const supabase = useSupabaseClient()
-const user_data = await supabase.auth.getUser()
-const username = user_data['data']['user']['email'].split('@')[0]
-const id = user_data['data']['user']['id']
-const { data, error } = await supabase.from('profile').select('wins').eq('id', id)
-const wins = data[0]['wins']
+const user = useSupabaseUser()
+const username = ref('')
+const wins = ref(0)
 
+watch(user, async (newUser) => {
+  if (newUser) {
+    username.value = newUser.email.split('@')[0]
+    const { data, error } = await supabase.from('profile').select('wins').eq('id', newUser.id).single()
+    if (data) wins.value = data.wins
+  }
+}, { immediate: true })
 async function logout() {
   const { error } = await supabase.auth.signOut()
   if (error === null) {
