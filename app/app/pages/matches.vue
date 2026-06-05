@@ -142,7 +142,10 @@ onMounted(async () => {
       const fruitLabels = Object.keys(fruitTypes)
 
       if (labels.includes('lose') && labels.some(l => fruitLabels.includes(l))) {
+        const timeSurvived = (Date.now() - gameStartTime)/60 //in secs 
+        console.log(timeSurvived)
         //navigateTo('/lose')
+        //connect time survived to it
       } else if (pair.bodyA.label === pair.bodyB.label) {
         const firstBodyToRemove = Matter.Composite.allBodies(engine.world).find(body => body.id === pair.bodyA.id);
         const secondBodyToRemove = Matter.Composite.allBodies(engine.world).find(body => body.id === pair.bodyB.id);
