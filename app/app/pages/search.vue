@@ -4,6 +4,8 @@ import { reactive } from 'vue'
 const supabase = useSupabaseClient()
 const user = useSupabaseUser()
 let matches = reactive([])
+let inAMatch = ref(false)
+let currentMatch = ref('')
 const { data, error } = await supabase.from('matches').select('*')
 if(data){
     data.forEach((m) => {
@@ -37,7 +39,7 @@ const changes = supabase.channel('matches:players',{
             const index = matches.findIndex(m => m.uuid === payload.new.uuid)
             if (index !== -1){
                 if(Object.keys(payload.new.players).length >= 2){
-                    matches.slice(index, 1)
+                    matches.splice(index, 1)
                 } else {
                     matches[index] = { uuid: payload.new.uuid, players: payload.new.players }
                 }
@@ -51,8 +53,10 @@ const changes = supabase.channel('matches:players',{
 onUnmounted(() => {supabase.removeChannel(changes)})
 
 async function createMatch(){
-  const { data, error } = await supabase.from('matches').insert({ players: { p1: user.value.sub } })
+  const { data, error } = await supabase.from('matches').insert({ players: { p1: user.value.sub } }).select("*").single();
   if (error) console.error(error)
+  inAMatch.value=true
+  currentMatch.value = data.uuid
 }
 
 
@@ -67,19 +71,29 @@ async function joinMatch(uuid) {
   const updatedPlayers = { ...data.players, p2: user.value.sub }
 
   const { error: updateError } = await supabase.from('matches').update({ players: updatedPlayers }).eq('uuid', uuid)
+  inAMatch.value=true
+  currentMatch.value = data.uuid
 
 }
 
 </script>
 
 <template>
-<div class="w-300 h-200 overflow-y-scroll overflow-x-hidden">
-    <div v-for="match in matches">
-        <div @click='joinMatch(match.uuid)'>
-            <p>{{ match.uuid }}</p>
-            <p>{{ Object.keys(match.players).length }}/2 players</p>
+<div v-if="!inAMatch">
+    <div class="w-300 h-200 overflow-y-scroll overflow-x-hidden" v-if="matches.length>0">
+        <div v-for="match in matches" >
+            <div @click='joinMatch(match.uuid)'>
+                <p>{{ match.uuid }}</p>
+                <p>{{ Object.keys(match.players).length }}/2 players</p>
+            </div>
         </div>
     </div>
+    <div v-else>
+        <p>no matches gng im sorry</p>
+    </div>
+    <button @click="createMatch">createMatch</button>
 </div>
-<button @click="createMatch">createMatch</button>
+<div v-else>
+
+</div>
 </template>
