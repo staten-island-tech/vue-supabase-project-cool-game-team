@@ -1,5 +1,12 @@
 <template>
-  <div ref="game"/>
+  <div class="flex flex-col">
+    <div class="relative w-[800px]">
+      <div ref="game" />
+      <div class="absolute top-0 right-0 text-white text-4xl font-extrabold m-2">
+        Time Survived: {{ formattedTime }} 
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -92,10 +99,30 @@ const spawnDecreaseAmount = 100; // ms reduction per step
 
 let spawnInterval = spawnStartInterval;
 let gameStartTime = Date.now();
+let timeSurvived = 0;
+let formattedTime = ref('')
+function formatTime(ms: number): string {
+  const units = [
+    { label: 'day',    ms: 86400000 },
+    { label: 'hour',   ms: 3600000  },
+    { label: 'minute', ms: 60000    },
+    { label: 'second', ms: 1000     },
+  ]
+
+  let result = ''
+  for (const unit of units) {
+    const amount = Math.floor(ms / unit.ms)
+    if (amount >= 1) {
+      result += `${amount} ${unit.label}${amount !== 1 ? 's' : ''} `
+      ms -= amount * unit.ms
+    }
+  }
+
+  return result.trim()
+}
 
 function getCurrentSpawnInterval(): number {
-  const elapsed = Date.now() - gameStartTime;
-  const steps = Math.floor(elapsed / speedStepInterval);
+  const steps = Math.floor(timeSurvived / speedStepInterval);
   const reduced = spawnStartInterval - steps * spawnDecreaseAmount;
   return Math.max(reduced, spawnMinInterval);
 }
@@ -170,6 +197,11 @@ onMounted(async () => {
     console.log(spawnInterval)
     currentFruit = createNewFruit();
   }, spawnInterval);
+
+  setInterval(() => {
+    timeSurvived += 1000
+    formattedTime.value = formatTime(timeSurvived)
+  }, 1000);
 
   Render.run(render);
   runner = Runner.create();
