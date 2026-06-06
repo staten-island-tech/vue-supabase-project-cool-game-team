@@ -101,6 +101,7 @@ let spawnInterval = spawnStartInterval;
 let gameStartTime = Date.now();
 let timeSurvived = 0;
 let formattedTime = ref('')
+
 function formatTime(ms: number): string {
   const units = [
     { label: 'day',    ms: 86400000 },
@@ -143,9 +144,9 @@ onMounted(async () => {
     },
   });
 
-  const ground      = Bodies.rectangle(400, 800, 810, 40,  { isStatic: true });
-  const leftWall    = Bodies.rectangle(10,  200, 20,  1160, { isStatic: true });
-  const rightWall   = Bodies.rectangle(785, 200, 20,  1160, { isStatic: true });
+  const ground      = Bodies.rectangle(400, 810, 810, 60,  { isStatic: true });
+  const leftWall    = Bodies.rectangle(10,  200, 60,  1160, { isStatic: true });
+  const rightWall   = Bodies.rectangle(785, 200, 60,  1160, { isStatic: true });
   const containerTop = Bodies.rectangle(397, 70,  755, 20, {
     isStatic: true,
     isSensor: true,
@@ -180,7 +181,7 @@ onMounted(async () => {
           const fruitTypesArray = Object.entries(fruitTypes);
           const index = fruitTypesArray.findIndex(([name]) => name === pair.bodyA.label);
           const nextFruit = fruitTypesArray[index + 1]; 
-            
+          
           const newFruitX = (firstBodyToRemove?.position.x + secondBodyToRemove?.position.x)/2
           const newFruitY = (firstBodyToRemove?.position.y + secondBodyToRemove?.position.y)/2
           createNewFruit(newFruitX, newFruitY, nextFruit[1])
