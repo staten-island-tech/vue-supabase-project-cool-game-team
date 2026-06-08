@@ -58,6 +58,9 @@ const user = useSupabaseUser()
 const username = ref('')
 const wins = ref(0)
 
+/**
+ * checks for changes in user var so wins doesn't get loaded before user is loaded
+ */
 watch(user, async (newUser) => {
   if (newUser) {
     username.value = newUser.email.split('@')[0]
@@ -65,6 +68,10 @@ watch(user, async (newUser) => {
     if (data) wins.value = data.wins
   }
 }, { immediate: true })
+
+/**
+ * Logs the user out by calling supabase.auth.signOut() and redirects to home page on success
+ */
 async function logout() {
   const { error } = await supabase.auth.signOut()
   if (error === null) {

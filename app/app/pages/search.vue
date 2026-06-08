@@ -18,9 +18,7 @@ let playerUsernames = reactive<string[]>([])
 type Match = Database['public']['Tables']['matches']['Row']
 type Player = Match['players']
 
-const isMatchFull = computed<boolean>(() =>
-  !!currentMatchData.value && Object.keys(currentMatchData.value.players as object as Record<string, string>).length >= 2
-)
+const isMatchFull = computed<boolean>(() => !!currentMatchData.value && Object.keys(currentMatchData.value.players as object as Record<string, string>).length >= 2)
 const isUserHost = computed(() => currentMatchData.value?.players?.p1 === user.value?.sub)
 const currentMatchData = computed(() => matches.find(m => m.uuid === currentMatchUUID.value))
 
@@ -36,6 +34,14 @@ if(data){
 }
 
 await supabase.realtime.setAuth()
+
+/**
+ * Sets up connection for db changes on matches table
+ * @description On insert: adds match to matches array if not full
+ * @event On delete: removes match from matches array, if current match is deleted resets inAMatch
+ * @event On update: if match is in matches array and becomes full removes from matches array, if current match updates player usernames, if current match starts navigates to game page
+ * @event Unsubscribes from changes on unmounted
+ */
 
 const changes = supabase.channel('matches:players',{
     config: {private: true}
@@ -83,6 +89,11 @@ const changes = supabase.channel('matches:players',{
 })
 onUnmounted(() => {supabase.removeChannel(changes)})
 
+
+/**
+ * Sends a request to the backend to fetch the usernames of the players in the match and updates the playerUsernames array
+ * @param players Player Object e.g. {p1: 'uuid1', p2: 'uuid2'}
+ */
 async function fetchUsernames(players: Player): Promise<void> {
   playerUsernames.length = 0
   const uuids = Object.values(players).filter((uuid): uuid is string => uuid !== null)
@@ -95,6 +106,9 @@ async function fetchUsernames(players: Player): Promise<void> {
   playerUsernames.push(...results)
 }
 
+/**
+ * Creates a new match with the current user as the host and adds it to the matches array
+ */
 async function createMatch(): Promise<void> {
   const { data, error } = await supabase.from('matches').insert({ players: { p1: user.value?.sub } }).select("*").single();
   if (error || !data) return console.error(error)
@@ -104,7 +118,10 @@ async function createMatch(): Promise<void> {
   
 }
 
-
+/**
+ * Joins a match by updating the match's players column to include the current user's uuid as p2
+ * @param uuid uuid of a player joining
+ */
 async function joinMatch(uuid: string) {
   const { data, error } = await supabase.from('matches').select('players').eq('uuid', uuid).single()
 
@@ -123,6 +140,9 @@ async function joinMatch(uuid: string) {
 
 }
 
+/**
+ * Leaves a match by deleting if host leaves or updates match to remove p2 in Players
+ */
 async function leaveMatch() {
   if (currentMatchData.value?.players?.p1 === user.value?.sub) {
     const { error } = await supabase.from('matches').delete().eq('uuid', currentMatchUUID.value)
@@ -138,6 +158,9 @@ async function leaveMatch() {
   }
 }
 
+/**
+ * Starts a match by redirecting to game page and passing in match uuid as param
+ */
 async function startMatch(){
     const { error: updateError } = await supabase.from('matches').update({ started: true }).eq('uuid', currentMatchUUID.value)
     if (!updateError) await navigateTo(`/game/${currentMatchUUID.value}`)
