@@ -25,16 +25,16 @@ type FruitType = {
 };
 
 const fruitTypes: Record<string, FruitType> = {
-  cherry:     { img: '/img/cherry.png',     radius: 120, selectionProbability: 1 },
+  cherry:     { img: '/img/cherry.png',     radius: 120, selectionProbability: 0 },
   strawberry: { img: '/img/strawberry.png', radius: 100, selectionProbability: 0 },
   grape:      { img: '/img/grape.png',      radius: 80, selectionProbability: 0 },
-  citrus:     { img: '/img/citrus.png',     radius: 60, selectionProbability: 0 },
-  apple:      { img: '/img/apple.png',      radius: 50,  selectionProbability: 0 },
-  pear:       { img: '/img/pear.png',       radius: 40,  selectionProbability: 0 },
-  peach:      { img: '/img/peach.png',      radius: 30,  selectionProbability: 0 },
-  pineapple:  { img: '/img/pineapple.png',  radius: 25,  selectionProbability: 0 },
-  melon:      { img: '/img/melon.png',      radius: 15,  selectionProbability: 0 },
-  watermelon: { img: '/img/watermelon.png', radius: 10,  selectionProbability: 0 },
+  citrus:     { img: '/img/citrus.png',     radius: 70, selectionProbability: 0 },
+  apple:      { img: '/img/apple.png',      radius: 60,  selectionProbability: 0 },
+  pear:       { img: '/img/pear.png',       radius: 50,  selectionProbability: 0 },
+  peach:      { img: '/img/peach.png',      radius: 40,  selectionProbability: 0 },
+  pineapple:  { img: '/img/pineapple.png',  radius: 30,  selectionProbability: 0 },
+  melon:      { img: '/img/melon.png',      radius: 25,  selectionProbability: 0 },
+  watermelon: { img: '/img/watermelon.png', radius: 20,  selectionProbability: 1},
 };
 
 const game = ref<HTMLElement | null>(null);
@@ -92,13 +92,12 @@ function createNewFruit(x = 380, y = 250, type = selectRandomFruit()) {
   return fruit;
 }
 
-const spawnStartInterval = 2000; // ms
+const spawnStartInterval = 500; // ms
 const spawnMinInterval = 500;    // ms
 const speedStepInterval = 10000; // decrease every 10s
 const spawnDecreaseAmount = 100; // ms reduction per step
 
 let spawnInterval = spawnStartInterval;
-let gameStartTime = Date.now();
 let timeSurvived = 0;
 let formattedTime = ref('')
 
@@ -168,25 +167,30 @@ onMounted(async () => {
     event.pairs.forEach((pair) => {
       const labels = [pair.bodyA.label, pair.bodyB.label];
       const fruitLabels = Object.keys(fruitTypes)
-
+      console.log(timeSurvived)
       if (labels.includes('lose') && labels.some(l => fruitLabels.includes(l))) {
-        const timeSurvived = (Date.now() - gameStartTime)/60 //in secs 
         console.log(timeSurvived)
-        //navigateTo('/lose')
-        //connect time survived to it
+        navigateTo({
+          path: '/lose',
+          query: {
+            timeSurvived: formattedTime.value
+          }
+        })
       } else if (pair.bodyA.label === pair.bodyB.label) {
         const firstBodyToRemove = Matter.Composite.allBodies(engine.world).find(body => body.id === pair.bodyA.id);
         const secondBodyToRemove = Matter.Composite.allBodies(engine.world).find(body => body.id === pair.bodyB.id);
         if (firstBodyToRemove || secondBodyToRemove) {
           const fruitTypesArray = Object.entries(fruitTypes);
           const index = fruitTypesArray.findIndex(([name]) => name === pair.bodyA.label);
-          const nextFruit = fruitTypesArray[index + 1]; 
-          
-          const newFruitX = (firstBodyToRemove?.position.x + secondBodyToRemove?.position.x)/2
-          const newFruitY = (firstBodyToRemove?.position.y + secondBodyToRemove?.position.y)/2
-          createNewFruit(newFruitX, newFruitY, nextFruit[1])
+          const nextFruit = fruitTypesArray[index + 1];
+    
+          const newFruitX = (firstBodyToRemove.position.x + secondBodyToRemove.position.x) / 2
+          const newFruitY = (firstBodyToRemove.position.y + secondBodyToRemove.position.y) / 2
+
           Matter.Composite.remove(engine.world, firstBodyToRemove);
-          Matter.Composite.remove(engine.world, secondBodyToRemove)
+          Matter.Composite.remove(engine.world, secondBodyToRemove);
+
+          if (nextFruit) createNewFruit(newFruitX, newFruitY, nextFruit[1])
         }
         
       }
