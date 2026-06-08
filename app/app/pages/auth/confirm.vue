@@ -7,7 +7,9 @@ const hash = useRoute().query.token as string;
 if (!hash) {
   await navigateTo('/error', { redirectCode: 401 });
 }
-
+/**
+ * user clicks on a magic link sent to email which has a hash in url, takes it and verifies with supabase
+ */
 const { error } = await supabase.auth.verifyOtp({
   token_hash: hash,
   type: 'email',

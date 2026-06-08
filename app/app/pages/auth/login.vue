@@ -4,7 +4,9 @@ definePageMeta({ ssr: false });
 const email = ref('');
 const loading = ref(false);
 const supabaseClient = useSupabaseClient();
-
+/**
+ * sends login request to backend which then sends magic link to email if successful, redirects to /account
+ */
 async function logInRequest() {
   try {
     loading.value = true;
