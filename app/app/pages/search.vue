@@ -5,22 +5,25 @@
 //definePageMeta({middleware: 'auth'})
 import { reactive, computed } from 'vue'
 import type { Database } from '../../database.types'
+import { usePlayerStore } from '~/stores/player'
+import { useMatchStore } from '~/stores/match'
+import { storeToRefs } from 'pinia'
 const supabase = useSupabaseClient<Database>()
 const user = useSupabaseUser()
+const playerStore = usePlayerStore()
+const matchStore = useMatchStore()
+const {  matches, inAMatch, currentMatchData, playerUsernames, isMatchFull, isUserHost, currentMatchUUID } = storeToRefs(matchStore)
 
-let matches = reactive<Match[]>([])
-let inAMatch = ref(false)
-let currentMatchUUID = ref('')
-let playerUsernames = reactive<string[]>([])
+if (user.value?.sub) {
+  playerStore.uuid = user.value.sub
+}
+
 
 
 
 type Match = Database['public']['Tables']['matches']['Row']
 type Player = Match['players']
 
-const isMatchFull = computed<boolean>(() => !!currentMatchData.value && Object.keys(currentMatchData.value.players as object as Record<string, string>).length >= 2)
-const isUserHost = computed(() => currentMatchData.value?.players?.p1 === user.value?.sub)
-const currentMatchData = computed(() => matches.find(m => m.uuid === currentMatchUUID.value))
 
 
 
@@ -28,7 +31,7 @@ const { data, error } = await supabase.from('matches').select('*')
 if(data){
     data.forEach((m) => {
         if(Object.keys(m.players).length < 2){
-            matches.push(m)
+            matches.value.push(m)
         }
     })
 }
@@ -53,12 +56,12 @@ const changes = supabase.channel('matches:players',{
 }, async(payload) => {
     switch(payload.eventType){
         case 'INSERT':{
-            if(Object.keys(payload.new.players).length < 2) matches.push(payload.new as Match)
+            if(Object.keys(payload.new.players).length < 2) matches.value.push(payload.new as Match)
             break
         }
         case 'DELETE':{
-            const index = matches.findIndex(match => match.uuid === payload.old.uuid)
-            if (index !== -1) matches.splice(index, 1)
+            const index = matches.value.findIndex(match => match.uuid === payload.old.uuid)
+            if (index !== -1) matches.value.splice(index, 1)
             if (currentMatchUUID.value === payload.old.uuid) {
                 inAMatch.value = false
                 currentMatchUUID.value = ''
@@ -67,12 +70,12 @@ const changes = supabase.channel('matches:players',{
             break
         }
         case 'UPDATE': {
-            const index = matches.findIndex(m => m.uuid === payload.new.uuid)
+            const index = matches.value.findIndex(m => m.uuid === payload.new.uuid)
             if (index !== -1) {
             if (Object.keys(payload.new.players).length >= 2) {
-                matches.splice(index, 1)
+                matches.value.splice(index, 1)
             } else {
-                matches[index] = payload.new as Match
+                matches.value[index] = payload.new as Match
             }
             }
             if (inAMatch.value && payload.new.uuid === currentMatchUUID.value) {
@@ -95,7 +98,7 @@ onUnmounted(() => {supabase.removeChannel(changes)})
  * @param players Player Object e.g. {p1: 'uuid1', p2: 'uuid2'}
  */
 async function fetchUsernames(players: Player): Promise<void> {
-  playerUsernames.length = 0
+  playerUsernames.value.length = 0
   const uuids = Object.values(players).filter((uuid): uuid is string => uuid !== null)
   const results = await Promise.all(
     uuids.map(async (uuid) => {
@@ -103,14 +106,14 @@ async function fetchUsernames(players: Player): Promise<void> {
       return (data ?? 'Unknown') as string
     })
   )
-  playerUsernames.push(...results)
+  playerUsernames.value.push(...results)
 }
 
 /**
  * Creates a new match with the current user as the host and adds it to the matches array
  */
 async function createMatch(): Promise<void> {
-  const { data, error } = await supabase.from('matches').insert({ players: { p1: user.value?.sub } }).select("*").single();
+  const { data, error } = await supabase.from('matches').insert({ players: { p1: playerStore.uuid } }).select("*").single();
   if (error || !data) return console.error(error)
   currentMatchUUID.value = data.uuid
   inAMatch.value=true
@@ -144,7 +147,7 @@ async function joinMatch(uuid: string) {
  * Leaves a match by deleting if host leaves or updates match to remove p2 in Players
  */
 async function leaveMatch() {
-  if (currentMatchData.value?.players?.p1 === user.value?.sub) {
+  if (currentMatchData.value?.players?.p1 === playerStore.uuid) {
     const { error } = await supabase.from('matches').delete().eq('uuid', currentMatchUUID.value)
     if (error) return console.error(error)
     inAMatch.value = false
