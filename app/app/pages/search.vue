@@ -204,17 +204,17 @@ async function startMatch(){
         <h2 class="card-title text-sm font-bold uppercase tracking-widest text-base-content/50">Players</h2>
         <div class="flex flex-col gap-2">
           <div
-            v-for="(uuid, key) in currentMatchData?.players"
-            :key="key"
+            v-for="(username, index) in playerUsernames"
+            :key="index"
             class="flex items-center gap-3 bg-base-200 rounded-xl px-4 py-3"
           >
             <div class="avatar placeholder">
               <div class="bg-primary text-primary-content rounded-full w-8">
-                <span class="text-sm font-black">{{ key === 'p1' ? 'P1' : 'P2' }}</span>
+                <span class="text-sm font-black">{{ username?.charAt(0).toUpperCase() }}</span>
               </div>
             </div>
-            <span class="font-mono text-xs text-base-content/60">{{ uuid }}</span>
-            <div v-if="key === 'p1'" class="badge badge-warning badge-sm ml-auto">Host</div>
+            <span class="font-mono text-xs text-base-content/60">{{ username }}</span>
+            <div v-if="index === 0" class="badge badge-warning badge-sm ml-auto">Host</div>
           </div>
           <!-- Empty slot -->
           <div v-if="Object.keys(currentMatchData?.players || {}).length < 2" class="flex items-center gap-3 bg-base-200/50 rounded-xl px-4 py-3 border border-dashed border-base-content/20">
