@@ -10,8 +10,13 @@ export default defineNuxtConfig({
   pages: true,
   modules: [
     '@nuxtjs/supabase',
-    '@nuxt/eslint',
+    '@nuxt/eslint'
   ],
+  nitro: {
+    experimental: {
+      websocket: true
+    }
+  },
   supabase: {
     url: process.env.SUPABASE_URL,
     key: process.env.SUPABASE_PUBLISHABLE_KEY,
