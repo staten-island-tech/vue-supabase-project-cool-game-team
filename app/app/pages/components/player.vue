@@ -12,11 +12,15 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from "vue";
 import Matter from "matter-js";
-
+import { useGameRoom } from "../composables/useGameRoom";
 definePageMeta({ ssr: false, middleware: [] });
 
 const { Engine, Render, Runner, Bodies, World, Composite } = Matter;
+const route = useRoute()
 
+const roomId = route.params.roomId as string
+
+const { sendBoardUpdate } = useGameRoom(roomId)
 type FruitType = {
   img: string;
   radius: number;
@@ -142,6 +146,17 @@ onMounted(async () => {
       wireframes: false,
     },
   });
+  syncInterval = window.setInterval(() => {
+    sendBoardUpdate({
+      fruits: Matter.Composite.allBodies(engine.world).map(fruit => ({
+        id: fruit.id,
+        type: fruit.label,
+        x: fruit.position.x,
+        y: fruit.position.y,
+        angle: fruit.angle
+      }))
+    })
+  }, 100)
 
   const ground      = Bodies.rectangle(400, 810, 810, 60,  { isStatic: true });
   const leftWall    = Bodies.rectangle(10,  200, 60,  1160, { isStatic: true });
@@ -179,6 +194,7 @@ onMounted(async () => {
       } else if (pair.bodyA.label === pair.bodyB.label) {
         const firstBodyToRemove = Matter.Composite.allBodies(engine.world).find(body => body.id === pair.bodyA.id);
         const secondBodyToRemove = Matter.Composite.allBodies(engine.world).find(body => body.id === pair.bodyB.id);
+        console.log(Matter.Composite.allBodies(engine.world))
         if (firstBodyToRemove || secondBodyToRemove) {
           const fruitTypesArray = Object.entries(fruitTypes);
           const index = fruitTypesArray.findIndex(([name]) => name === pair.bodyA.label);
