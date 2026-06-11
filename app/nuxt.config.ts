@@ -18,6 +18,15 @@ export default defineNuxtConfig({
     }
   },
   debug:true,
+  hooks: {
+  'pages:extend'(pages) {
+    pages.forEach(page => {
+      page.path = page.path
+        .replace('/auth', '')
+        .replace('/components', '')
+    })
+  }
+},
   supabase: {
     url: process.env.SUPABASE_URL,
     key: process.env.SUPABASE_PUBLISHABLE_KEY,
