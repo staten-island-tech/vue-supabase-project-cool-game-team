@@ -2,7 +2,7 @@
 definePageMeta({ ssr: false });
 
 const supabase = useSupabaseClient();
-const hash = useRoute().query.token as string;
+const hash = useRoute().query.token_hash as string;
 
 if (!hash) {
   await navigateTo('/error', { redirectCode: 401 });
