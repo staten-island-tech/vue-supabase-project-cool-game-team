@@ -1,7 +1,7 @@
 <template>
   <div class="flex gap-4">
     <player @gameData="sendToSocket" />
-    <opponent ?:state="opponentState.value"/>
+    
   </div>
 </template>
 
@@ -16,8 +16,8 @@ definePageMeta({ ssr: false, middleware: [] })
 const matchStore = useMatchStore()
 
 const opponentState = ref<any>(null)
-const socket = io('http://localhost:3001', { reconnection: true })
-
+const socket = io('http://localhost:3000', { reconnection: true })
+//to do: for the final version make it not local host
 socket.on('connect', () => console.log('connected'))
 
 function sendToSocket(data: any) {
@@ -29,7 +29,7 @@ onMounted(() => {
 
   socket.on('opponent-state', (state) => {
     opponentState.value = state
-    console.log('📦 opponent state:', state)
+    console.log('opponent state:', state)
   })
 })
 

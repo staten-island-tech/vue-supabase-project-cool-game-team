@@ -35,9 +35,13 @@ export const useMatchStore = defineStore('matchStore', () => {
     melon:      { img: '/img/melon.png',      radius: 25,  selectionProbability: 0 },
     watermelon: { img: '/img/watermelon.png', radius: 20,  selectionProbability: 1},
     };
+    const scale = Math.min(
+        window.innerWidth / 2 / 800,   
+        window.innerHeight / 900
+    )
     const isMatchFull = computed<boolean>(() => !!currentMatchData.value && Object.keys(currentMatchData.value.players as object as Record<string, string>).length >= 2)
     const isUserHost = computed(() => currentMatchData.value?.players?.p1 === playerStore.uuid)
     const currentMatchData = computed(() => matches.find(m => m.uuid === currentMatchUUID.value))
 
-    return { fruitTypes,matches, inAMatch, currentMatchData, playerUsernames, isMatchFull, isUserHost, currentMatchUUID}
+    return { scale, fruitTypes,matches, inAMatch, currentMatchData, playerUsernames, isMatchFull, isUserHost, currentMatchUUID}
 })

@@ -2,6 +2,7 @@
 /**
  * @fileoverview - Match page where users can create or join matches, see who is in the match, and start the game when ready
  */
+
 //definePageMeta({middleware: 'auth'})
 import { reactive, computed } from 'vue'
 import type { Database } from '../../database.types'
@@ -172,9 +173,6 @@ async function startMatch(){
 </script>
 
 <template>
-<div class="fixed top-0 left-0 bg-black text-white text-xs p-2 z-50">
-  inAMatch: {{ inAMatch }} | UUID: {{ currentMatchUUID }}
-</div>
   <!-- Lobby view -->
   <div v-if="!inAMatch" class="min-h-screen bg-base-300 flex flex-col items-center justify-center p-6 gap-6">
 

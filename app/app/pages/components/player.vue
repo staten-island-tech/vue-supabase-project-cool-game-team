@@ -1,15 +1,22 @@
 <template>
   <div class="flex flex-col overflow-hidden w-screen h-screen">
     <div class="relative">
-      <div :style="{ transform: `scale(${scale})`, transformOrigin: 'top left' }" ref="game" /> 
+      <div
+        :style="{ transform: `scale(${scale})`, transformOrigin: 'top left' }"
+        ref="game"
+      />
       <!--i did transformation via css instead of changing the game window size bc 
       otherwise the game window size will be different between the users in multiplayer which affects gameplay -->
-  <div :style="{ transform: `scale(${scale})`, transformOrigin: 'top left' }">
-      <div class="absolute top-0 right-0 text-white text-4xl font-extrabold m-2">
-        Time Survived: {{ formattedTime }} 
+      <div
+        :style="{ transform: `scale(${scale})`, transformOrigin: 'top left' }"
+      >
+        <div
+          class="absolute top-0 right-0 text-white text-4xl font-extrabold m-2"
+        >
+          Time Survived: {{ formattedTime }}
+        </div>
       </div>
     </div>
-  </div>
   </div>
 </template>
 
@@ -18,19 +25,16 @@ import { ref, onMounted, onBeforeUnmount } from "vue";
 import Matter from "matter-js";
 
 definePageMeta({ ssr: false, middleware: [] });
-const emit = defineEmits(['gameData'])
+const emit = defineEmits(["gameData"]);
 const { Engine, Render, Runner, Bodies, World, Composite } = Matter;
 
-import { useMatchStore } from '~/stores/match'
+import { useMatchStore } from "~/stores/match";
 
-const matchStore = useMatchStore()
+const matchStore = useMatchStore();
 
 const game = ref<HTMLElement | null>(null);
 
-const scale = Math.min(
-  window.innerWidth / 2 / 800,   
-  window.innerHeight / 900
-)
+const scale = matchStore.scale;
 
 let engine: Matter.Engine;
 let render: Matter.Render;
@@ -61,11 +65,11 @@ async function preloadAllFruits() {
             resolve();
           };
           img.src = fruit.img;
-        })
-    )
+        }),
+    ),
   );
 }
-selectRandomFruit()
+selectRandomFruit();
 function createNewFruit(x = 380, y = 250, type = selectRandomFruit()) {
   //default falling x = 380, y = 140
   const fruit = Bodies.circle(x, y, type.radius, {
@@ -78,7 +82,7 @@ function createNewFruit(x = 380, y = 250, type = selectRandomFruit()) {
       },
     },
   });
-  fruit.label = type.img.slice(5, -4) 
+  fruit.label = type.img.slice(5, -4);
   //should i have to resort to this convoluted method for getting fruit name?
   // no but i structured the data weirdly :sob:
   Composite.add(engine.world, fruit);
@@ -86,32 +90,32 @@ function createNewFruit(x = 380, y = 250, type = selectRandomFruit()) {
 }
 
 const spawnStartInterval = 500; // ms
-const spawnMinInterval = 500;    // ms
+const spawnMinInterval = 500; // ms
 const speedStepInterval = 10000; // decrease every 10s
 const spawnDecreaseAmount = 100; // ms reduction per step
 
 let spawnInterval = spawnStartInterval;
 let timeSurvived = 0;
-let formattedTime = ref('')
+let formattedTime = ref("");
 
 function formatTime(ms: number): string {
   const units = [
-    { label: 'day',    ms: 86400000 },
-    { label: 'hour',   ms: 3600000  },
-    { label: 'minute', ms: 60000    },
-    { label: 'second', ms: 1000     },
-  ]
+    { label: "day", ms: 86400000 },
+    { label: "hour", ms: 3600000 },
+    { label: "minute", ms: 60000 },
+    { label: "second", ms: 1000 },
+  ];
 
-  let result = ''
+  let result = "";
   for (const unit of units) {
-    const amount = Math.floor(ms / unit.ms)
+    const amount = Math.floor(ms / unit.ms);
     if (amount >= 1) {
-      result += `${amount} ${unit.label}${amount !== 1 ? 's' : ''} `
-      ms -= amount * unit.ms
+      result += `${amount} ${unit.label}${amount !== 1 ? "s" : ""} `;
+      ms -= amount * unit.ms;
     }
   }
 
-  return result.trim()
+  return result.trim();
 }
 
 function getCurrentSpawnInterval(): number {
@@ -136,14 +140,14 @@ onMounted(async () => {
     },
   });
 
-  const ground      = Bodies.rectangle(400, 810, 810, 60,  { isStatic: true });
-  const leftWall    = Bodies.rectangle(10,  200, 60,  1160, { isStatic: true });
-  const rightWall   = Bodies.rectangle(785, 200, 60,  1160, { isStatic: true });
-  const containerTop = Bodies.rectangle(397, 70,  755, 20, {
+  const ground = Bodies.rectangle(400, 810, 810, 60, { isStatic: true });
+  const leftWall = Bodies.rectangle(10, 200, 60, 1160, { isStatic: true });
+  const rightWall = Bodies.rectangle(785, 200, 60, 1160, { isStatic: true });
+  const containerTop = Bodies.rectangle(397, 70, 755, 20, {
     isStatic: true,
     isSensor: true,
-    render: { fillStyle: 'red', opacity: 0.3 },
-    label: 'lose'
+    render: { fillStyle: "red", opacity: 0.3 },
+    label: "lose",
   });
 
   World.add(engine.world, [ground, leftWall, rightWall, containerTop]);
@@ -151,39 +155,57 @@ onMounted(async () => {
   const handleKeyDown = (e: KeyboardEvent) => {
     if (!currentFruit) return;
     const speed = 3;
-    if (e.key === 'ArrowLeft')  Matter.Body.setVelocity(currentFruit, { x: -speed, y: currentFruit.velocity.y });
-    if (e.key === 'ArrowRight') Matter.Body.setVelocity(currentFruit, { x:  speed, y: currentFruit.velocity.y });
+    if (e.key === "ArrowLeft")
+      Matter.Body.setVelocity(currentFruit, {
+        x: -speed,
+        y: currentFruit.velocity.y,
+      });
+    if (e.key === "ArrowRight")
+      Matter.Body.setVelocity(currentFruit, {
+        x: speed,
+        y: currentFruit.velocity.y,
+      });
   };
-  document.addEventListener('keydown', handleKeyDown);
+  document.addEventListener("keydown", handleKeyDown);
 
-  Matter.Events.on(engine, 'collisionStart', (event) => {
+  Matter.Events.on(engine, "collisionStart", (event) => {
     event.pairs.forEach((pair) => {
       const labels = [pair.bodyA.label, pair.bodyB.label];
-      const fruitLabels = Object.keys(matchStore.fruitTypes)
-      if (labels.includes('lose') && labels.some(l => fruitLabels.includes(l))) {
+      const fruitLabels = Object.keys(matchStore.fruitTypes);
+      if (
+        labels.includes("lose") &&
+        labels.some((l) => fruitLabels.includes(l))
+      ) {
         navigateTo({
-          path: '/lose',
+          path: "/lose",
           query: {
-            timeSurvived: formattedTime.value
-          }
-        })
+            timeSurvived: formattedTime.value,
+          },
+        });
       } else if (pair.bodyA.label === pair.bodyB.label) {
-        const firstBodyToRemove = Matter.Composite.allBodies(engine.world).find(body => body.id === pair.bodyA.id);
-        const secondBodyToRemove = Matter.Composite.allBodies(engine.world).find(body => body.id === pair.bodyB.id)
+        const firstBodyToRemove = Matter.Composite.allBodies(engine.world).find(
+          (body) => body.id === pair.bodyA.id,
+        );
+        const secondBodyToRemove = Matter.Composite.allBodies(
+          engine.world,
+        ).find((body) => body.id === pair.bodyB.id);
         if (firstBodyToRemove || secondBodyToRemove) {
           const fruitTypesArray = Object.entries(matchStore.fruitTypes);
-          const index = fruitTypesArray.findIndex(([name]) => name === pair.bodyA.label);
+          const index = fruitTypesArray.findIndex(
+            ([name]) => name === pair.bodyA.label,
+          );
           const nextFruit = fruitTypesArray[index + 1];
-    
-          const newFruitX = (firstBodyToRemove.position.x + secondBodyToRemove.position.x) / 2
-          const newFruitY = (firstBodyToRemove.position.y + secondBodyToRemove.position.y) / 2
+
+          const newFruitX =
+            (firstBodyToRemove.position.x + secondBodyToRemove.position.x) / 2;
+          const newFruitY =
+            (firstBodyToRemove.position.y + secondBodyToRemove.position.y) / 2;
 
           Matter.Composite.remove(engine.world, firstBodyToRemove);
           Matter.Composite.remove(engine.world, secondBodyToRemove);
 
-          if (nextFruit) createNewFruit(newFruitX, newFruitY, nextFruit[1])
+          if (nextFruit) createNewFruit(newFruitX, newFruitY, nextFruit[1]);
         }
-        
       }
     });
   });
@@ -192,14 +214,19 @@ onMounted(async () => {
     spawnInterval = getCurrentSpawnInterval();
     currentFruit = createNewFruit();
     const fruits = Matter.Composite.allBodies(engine.world)
-    .filter(b => !b.isStatic && b.label !== 'lose')
-    .map(b => ({ id: b.id, x: b.position.x, y: b.position.y, label: b.label }))
-    emit('gameData', { fruits, timeSurvived: formattedTime.value })
+      .filter((b) => !b.isStatic && b.label !== "lose")
+      .map((b) => ({
+        id: b.id,
+        x: b.position.x,
+        y: b.position.y,
+        label: b.label,
+      }));
+    emit("gameData", { fruits, timeSurvived: formattedTime.value });
   }, spawnInterval);
 
   setInterval(() => {
-    timeSurvived += 1000
-    formattedTime.value = formatTime(timeSurvived)
+    timeSurvived += 1000;
+    formattedTime.value = formatTime(timeSurvived);
   }, 1000);
 
   Render.run(render);
@@ -207,7 +234,7 @@ onMounted(async () => {
   Runner.run(runner, engine);
 
   onBeforeUnmount(() => {
-    document.removeEventListener('keydown', handleKeyDown);
+    document.removeEventListener("keydown", handleKeyDown);
   });
 });
 
