@@ -20,7 +20,7 @@ import Matter from "matter-js";
 definePageMeta({ ssr: false, middleware: [] });
 const emit = defineEmits(['gameData'])
 const { Engine, Render, Runner, Bodies, World, Composite } = Matter;
-const route = useRoute()
+
 import { useMatchStore } from '~/stores/match'
 
 const matchStore = useMatchStore()
@@ -190,7 +190,6 @@ onMounted(async () => {
 
   spawnIntervalChange = setInterval(() => {
     spawnInterval = getCurrentSpawnInterval();
-    console.log(spawnInterval)
     currentFruit = createNewFruit();
     const fruits = Matter.Composite.allBodies(engine.world)
     .filter(b => !b.isStatic && b.label !== 'lose')

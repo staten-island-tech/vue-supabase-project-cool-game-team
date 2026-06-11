@@ -1,7 +1,7 @@
 <template>
   <div class="flex gap-4">
     <player @gameData="sendToSocket" />
-    <!-- <OpponentGame :state="opponentState" /> -->
+    <opponent ?:state="opponentState.value"/>
   </div>
 </template>
 
@@ -10,6 +10,7 @@ import { io } from 'socket.io-client'
 import { useMatchStore } from '~/stores/match'
 import { ref, onMounted, onBeforeUnmount } from "vue"
 import player from '../components/player.vue'
+import opponent from '../components/opponent.vue'
 definePageMeta({ ssr: false, middleware: [] })
 
 const matchStore = useMatchStore()
