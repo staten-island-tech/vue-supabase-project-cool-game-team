@@ -7,7 +7,6 @@ import { usePlayerStore } from './player'
 
 type Match = Database['public']['Tables']['matches']['Row']
 
-
 export const useMatchStore = defineStore('matchStore', () => {
     const playerStore =  usePlayerStore()
 

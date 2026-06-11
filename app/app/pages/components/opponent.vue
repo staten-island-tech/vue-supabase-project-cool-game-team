@@ -1,5 +1,7 @@
 <template>
-  <div class="relative w-[800px] h-[900px] border-2 border-white bg-black">
+  <div 
+  :style="{ transform: `scale(${scale})`, transformOrigin: 'top left' }"
+  class="relative overflow-hidden w-screen h-screen border-2 border-white bg-black">
     <div v-if="!state" class="text-white p-4">Waiting for opponent...</div>
     <div v-else>
       <div v-for="fruit in state.fruits" :key="fruit.id"
@@ -20,12 +22,8 @@ import { useMatchStore } from '~/stores/match'
 
 const matchStore = useMatchStore()
 const fruitTypes = matchStore.fruitTypes
-
+const scale = matchStore.scale
 console.log(props.state)
 
-const scale = Math.min(
-  window.innerWidth / 2 / 800,   
-  window.innerHeight / 900
-)
 
 </script>

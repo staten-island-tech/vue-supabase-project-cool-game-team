@@ -177,7 +177,7 @@ onMounted(async () => {
         labels.some((l) => fruitLabels.includes(l))
       ) {
         navigateTo({
-          path: "/lose",
+          path: "/components/lose",
           query: {
             timeSurvived: formattedTime.value,
           },

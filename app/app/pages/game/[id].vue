@@ -1,7 +1,7 @@
 <template>
   <div class="flex gap-4">
     <player @gameData="sendToSocket" />
-    
+    <opponent :state="opponentState.value"/>
   </div>
 </template>
 
