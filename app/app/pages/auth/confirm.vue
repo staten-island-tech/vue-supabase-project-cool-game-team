@@ -10,14 +10,25 @@ if (!hash) {
 /**
  * user clicks on a magic link sent to email which has a hash in url, takes it and verifies with supabase
  */
-const { error } = await supabase.auth.verifyOtp({
+const { data, error } = await supabase.auth.verifyOtp({
   token_hash: hash,
   type: 'email',
 });
+console.log('verify session', data.session);
+
+
+const {
+  data: { session },
+} = await supabase.auth.getSession();
+
+console.log('current session', session);
 
 if (error) {
   await navigateTo('/error', { redirectCode: 401 });
 }
+
+
+navigateTo('/search');
 </script>
 
 <template>
