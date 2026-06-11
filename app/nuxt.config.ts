@@ -17,6 +17,7 @@ export default defineNuxtConfig({
       websocket: true
     }
   },
+  debug:true,
   supabase: {
     url: process.env.SUPABASE_URL,
     key: process.env.SUPABASE_PUBLISHABLE_KEY,

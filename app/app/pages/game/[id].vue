@@ -1,32 +1,38 @@
 <template>
-    <div>
-        <Matches/>
-        <Opponent/>
-    </div>
+  <div class="flex gap-4">
+    <player @gameData="sendToSocket" />
+    <!-- <OpponentGame :state="opponentState" /> -->
+  </div>
 </template>
 
 <script setup lang="ts">
-import { useGameRoom } from '../composables/useGameRoom';
-const route = useRoute()
+import { io } from 'socket.io-client'
+import { useMatchStore } from '~/stores/match'
+import { ref, onMounted, onBeforeUnmount } from "vue"
+import player from '../components/player.vue'
+definePageMeta({ ssr: false, middleware: [] })
 
-const roomId = route.params.roomId as string
+const matchStore = useMatchStore()
 
-const {
-  sendBoardUpdate,
-  onBoardUpdate,
-  cleanup
-} = useGameRoom(roomId)
-const opponentFruits = ref([])
-const opponentScore = ref(0)
-onBoardUpdate(payload => {
-  opponentFruits.value = payload.fruits
-  opponentScore.value = payload.score
+const opponentState = ref<any>(null)
+const socket = io('http://localhost:3001', { reconnection: true })
+
+socket.on('connect', () => console.log('connected'))
+
+function sendToSocket(data: any) {
+  socket.emit('game-state', matchStore.currentMatchUUID, data)
+}
+
+onMounted(() => {
+  socket.emit('join-game', matchStore.currentMatchUUID)
+
+  socket.on('opponent-state', (state) => {
+    opponentState.value = state
+    console.log('📦 opponent state:', state)
+  })
 })
-onUnmounted(() => {
-  cleanup()
+
+onBeforeUnmount(() => {
+  socket.disconnect()
 })
 </script>
-
-<style scoped>
-
-</style>

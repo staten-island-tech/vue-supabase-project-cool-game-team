@@ -12,34 +12,14 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from "vue";
 import Matter from "matter-js";
-import { useGameRoom } from "../composables/useGameRoom";
-definePageMeta({ ssr: false, middleware: [] });
 
+definePageMeta({ ssr: false, middleware: [] });
+const emit = defineEmits(['gameData'])
 const { Engine, Render, Runner, Bodies, World, Composite } = Matter;
 const route = useRoute()
+import { useMatchStore } from '~/stores/match'
 
-const roomId = route.params.roomId as string
-
-const { sendBoardUpdate } = useGameRoom(roomId)
-type FruitType = {
-  img: string;
-  radius: number;
-  scaleFactor?: number;
-  selectionProbability: number;
-};
-
-const fruitTypes: Record<string, FruitType> = {
-  cherry:     { img: '/img/cherry.png',     radius: 120, selectionProbability: 0 },
-  strawberry: { img: '/img/strawberry.png', radius: 100, selectionProbability: 0 },
-  grape:      { img: '/img/grape.png',      radius: 80, selectionProbability: 0 },
-  citrus:     { img: '/img/citrus.png',     radius: 70, selectionProbability: 0 },
-  apple:      { img: '/img/apple.png',      radius: 60,  selectionProbability: 0 },
-  pear:       { img: '/img/pear.png',       radius: 50,  selectionProbability: 0 },
-  peach:      { img: '/img/peach.png',      radius: 40,  selectionProbability: 0 },
-  pineapple:  { img: '/img/pineapple.png',  radius: 30,  selectionProbability: 0 },
-  melon:      { img: '/img/melon.png',      radius: 25,  selectionProbability: 0 },
-  watermelon: { img: '/img/watermelon.png', radius: 20,  selectionProbability: 1},
-};
+const matchStore = useMatchStore()
 
 const game = ref<HTMLElement | null>(null);
 
@@ -52,7 +32,7 @@ let spawnIntervalChange: ReturnType<typeof setInterval>;
 function selectRandomFruit(): FruitType | undefined {
   const random = Math.random();
   let sum = 0;
-  for (const fruit of Object.values(fruitTypes)) {
+  for (const fruit of Object.values(matchStore.fruitTypes)) {
     sum += fruit.selectionProbability;
     if (random < sum) return fruit;
   }
@@ -60,7 +40,7 @@ function selectRandomFruit(): FruitType | undefined {
 
 async function preloadAllFruits() {
   await Promise.all(
-    Object.values(fruitTypes).map(
+    Object.values(matchStore.fruitTypes).map(
       (fruit) =>
         new Promise<void>((resolve) => {
           const img = new Image();
@@ -146,17 +126,6 @@ onMounted(async () => {
       wireframes: false,
     },
   });
-  syncInterval = window.setInterval(() => {
-    sendBoardUpdate({
-      fruits: Matter.Composite.allBodies(engine.world).map(fruit => ({
-        id: fruit.id,
-        type: fruit.label,
-        x: fruit.position.x,
-        y: fruit.position.y,
-        angle: fruit.angle
-      }))
-    })
-  }, 100)
 
   const ground      = Bodies.rectangle(400, 810, 810, 60,  { isStatic: true });
   const leftWall    = Bodies.rectangle(10,  200, 60,  1160, { isStatic: true });
@@ -181,10 +150,8 @@ onMounted(async () => {
   Matter.Events.on(engine, 'collisionStart', (event) => {
     event.pairs.forEach((pair) => {
       const labels = [pair.bodyA.label, pair.bodyB.label];
-      const fruitLabels = Object.keys(fruitTypes)
-      console.log(timeSurvived)
+      const fruitLabels = Object.keys(matchStore.fruitTypes)
       if (labels.includes('lose') && labels.some(l => fruitLabels.includes(l))) {
-        console.log(timeSurvived)
         navigateTo({
           path: '/lose',
           query: {
@@ -193,10 +160,9 @@ onMounted(async () => {
         })
       } else if (pair.bodyA.label === pair.bodyB.label) {
         const firstBodyToRemove = Matter.Composite.allBodies(engine.world).find(body => body.id === pair.bodyA.id);
-        const secondBodyToRemove = Matter.Composite.allBodies(engine.world).find(body => body.id === pair.bodyB.id);
-        console.log(Matter.Composite.allBodies(engine.world))
+        const secondBodyToRemove = Matter.Composite.allBodies(engine.world).find(body => body.id === pair.bodyB.id)
         if (firstBodyToRemove || secondBodyToRemove) {
-          const fruitTypesArray = Object.entries(fruitTypes);
+          const fruitTypesArray = Object.entries(matchStore.fruitTypes);
           const index = fruitTypesArray.findIndex(([name]) => name === pair.bodyA.label);
           const nextFruit = fruitTypesArray[index + 1];
     
@@ -217,6 +183,10 @@ onMounted(async () => {
     spawnInterval = getCurrentSpawnInterval();
     console.log(spawnInterval)
     currentFruit = createNewFruit();
+    const fruits = Matter.Composite.allBodies(engine.world)
+    .filter(b => !b.isStatic && b.label !== 'lose')
+    .map(b => ({ id: b.id, x: b.position.x, y: b.position.y, label: b.label }))
+    emit('gameData', { fruits, timeSurvived: formattedTime.value })
   }, spawnInterval);
 
   setInterval(() => {

@@ -16,9 +16,28 @@ export const useMatchStore = defineStore('matchStore', () => {
     const currentMatchUUID = ref('')
     const playerUsernames = reactive<string[]>([])
 
+    type FruitType = {
+        img: string;
+        radius: number;
+        scaleFactor?: number;
+        selectionProbability: number;
+    };
+
+    const fruitTypes: Record<string, FruitType> = {
+    cherry:     { img: '/img/cherry.png',     radius: 120, selectionProbability: 0 },
+    strawberry: { img: '/img/strawberry.png', radius: 100, selectionProbability: 0 },
+    grape:      { img: '/img/grape.png',      radius: 80, selectionProbability: 0 },
+    citrus:     { img: '/img/citrus.png',     radius: 70, selectionProbability: 0 },
+    apple:      { img: '/img/apple.png',      radius: 60,  selectionProbability: 0 },
+    pear:       { img: '/img/pear.png',       radius: 50,  selectionProbability: 0 },
+    peach:      { img: '/img/peach.png',      radius: 40,  selectionProbability: 0 },
+    pineapple:  { img: '/img/pineapple.png',  radius: 30,  selectionProbability: 0 },
+    melon:      { img: '/img/melon.png',      radius: 25,  selectionProbability: 0 },
+    watermelon: { img: '/img/watermelon.png', radius: 20,  selectionProbability: 1},
+    };
     const isMatchFull = computed<boolean>(() => !!currentMatchData.value && Object.keys(currentMatchData.value.players as object as Record<string, string>).length >= 2)
     const isUserHost = computed(() => currentMatchData.value?.players?.p1 === playerStore.uuid)
     const currentMatchData = computed(() => matches.find(m => m.uuid === currentMatchUUID.value))
 
-    return { matches, inAMatch, currentMatchData, playerUsernames, isMatchFull, isUserHost, currentMatchUUID}
+    return { fruitTypes,matches, inAMatch, currentMatchData, playerUsernames, isMatchFull, isUserHost, currentMatchUUID}
 })
