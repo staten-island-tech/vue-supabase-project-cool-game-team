@@ -1,11 +1,15 @@
 <template>
-  <div class="flex flex-col">
-    <div class="relative w-[800px]">
-      <div ref="game" />
+  <div class="flex flex-col overflow-hidden w-screen h-screen">
+    <div class="relative">
+      <div :style="{ transform: `scale(${scale})`, transformOrigin: 'top left' }" ref="game" /> 
+      <!--i did transformation via css instead of changing the game window size bc 
+      otherwise the game window size will be different between the users in multiplayer which affects gameplay -->
+  <div :style="{ transform: `scale(${scale})`, transformOrigin: 'top left' }">
       <div class="absolute top-0 right-0 text-white text-4xl font-extrabold m-2">
         Time Survived: {{ formattedTime }} 
       </div>
     </div>
+  </div>
   </div>
 </template>
 
@@ -22,6 +26,11 @@ import { useMatchStore } from '~/stores/match'
 const matchStore = useMatchStore()
 
 const game = ref<HTMLElement | null>(null);
+
+const scale = Math.min(
+  window.innerWidth / 2 / 800,   
+  window.innerHeight / 900
+)
 
 let engine: Matter.Engine;
 let render: Matter.Render;

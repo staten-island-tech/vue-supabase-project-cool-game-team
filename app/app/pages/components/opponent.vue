@@ -13,7 +13,7 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{ state: any }>()
+const props = defineProps([''])
 
 const fruitTypes: Record<string, any> = {
   cherry:     { img: '/img/cherry.png',     radius: 120 },
