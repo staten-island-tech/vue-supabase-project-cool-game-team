@@ -1,20 +1,14 @@
 <template>
-  <div class="flex flex-col overflow-hidden w-screen h-screen">
-    <div class="relative">
-      <div
-        :style="{ transform: `scale(${scale})`, transformOrigin: 'top left' }"
-        ref="game"
-      />
-      <!--i did transformation via css instead of changing the game window size bc 
-      otherwise the game window size will be different between the users in multiplayer which affects gameplay -->
-      <div
-        :style="{ transform: `scale(${scale})`, transformOrigin: 'top left' }"
-      >
-        <div
-          class="absolute top-0 right-0 text-white text-4xl font-extrabold m-2"
-        >
-          Time Survived: {{ formattedTime }}
-        </div>
+  <div :style="{ width: scale * 800 + 'px', height: scale * 900 + 'px' }" class="overflow-hidden relative">
+    <div
+      :style="{ transform: `scale(${scale})`, transformOrigin: 'top left', position: 'absolute' }"
+      ref="game"
+    />
+    <div
+      :style="{ transform: `scale(${scale})`, transformOrigin: 'top left', position: 'absolute', top: 0, right: 0 }"
+    >
+      <div class="text-white text-4xl font-extrabold m-2">
+        Time Survived: {{ formattedTime }}
       </div>
     </div>
   </div>
@@ -221,6 +215,7 @@ onMounted(async () => {
         y: b.position.y,
         label: b.label,
       }));
+      console.log('emitting:', fruits.length, 'fruits') 
     emit("gameData", { fruits, timeSurvived: formattedTime.value });
   }, spawnInterval);
 
@@ -233,11 +228,12 @@ onMounted(async () => {
   runner = Runner.create();
   Runner.run(runner, engine);
 
-  onBeforeUnmount(() => {
+  
+});
+onBeforeUnmount(() => {
     document.removeEventListener("keydown", handleKeyDown);
   });
-});
-
+  
 onBeforeUnmount(() => {
   clearInterval(spawnIntervalChange);
   if (render) Render.stop(render);
