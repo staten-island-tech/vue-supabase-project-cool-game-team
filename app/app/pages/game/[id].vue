@@ -34,7 +34,7 @@ onMounted(() => {
     console.log('opponent state:', state)
   })
   //to do: the syncing gets hella messed up when the user goes to another tab or app
-  //make opponent disconnected/you disconnected page if 
+  //make opponent disconnected/you disconnected page 
   socket.on('error', (err) => console.error('socket error:', err))
 socket.on('disconnect', (reason) => console.log('disconnected:', reason))
 })
