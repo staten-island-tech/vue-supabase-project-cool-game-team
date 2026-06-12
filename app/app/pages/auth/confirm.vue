@@ -26,8 +26,6 @@ console.log('current session', session);
 if (error) {
   await navigateTo('/error', { redirectCode: 401 });
 }
-
-
 navigateTo('/search');
 </script>
 
