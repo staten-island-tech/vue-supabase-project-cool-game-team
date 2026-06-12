@@ -23,7 +23,7 @@
 
         <div class="mt-6">
           <NuxtLink
-            to="/auth/login"
+            to="/login"
             class="btn btn-primary btn-lg rounded-full px-8 shadow-lg hover:scale-105 transition-transform"
           >
             Log in / Sign up

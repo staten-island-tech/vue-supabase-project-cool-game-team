@@ -57,7 +57,7 @@ const supabase = useSupabaseClient()
 const user = useSupabaseUser()
 const username = ref('')
 const wins = ref(0)
-
+// add remove uuid after log out
 /**
  * checks for changes in user var so wins doesn't get loaded before user is loaded
  */
@@ -75,6 +75,8 @@ watch(user, async (newUser) => {
 async function logout() {
   const { error } = await supabase.auth.signOut()
   if (error === null) {
+
+
     await navigateTo({ path: '/' })
   }
 }

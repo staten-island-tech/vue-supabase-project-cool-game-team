@@ -18,6 +18,9 @@ if (user.value?.sub) {
   playerStore.uuid = user.value.sub
 }
 
+if(inAMatch.value === false){
+  playerUsernames.value = []
+}
 
 
 
@@ -35,7 +38,8 @@ if(data){
         }
     })
 }
-
+matches.value.[0].players
+if(Object.values(matches.value.[0].players))
 await supabase.realtime.setAuth()
 
 /**
