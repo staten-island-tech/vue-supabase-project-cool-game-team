@@ -137,7 +137,7 @@ onMounted(async () => {
   const ground = Bodies.rectangle(400, 810, 810, 60, { isStatic: true });
   const leftWall = Bodies.rectangle(10, 200, 60, 1160, { isStatic: true });
   const rightWall = Bodies.rectangle(785, 200, 60, 1160, { isStatic: true });
-  const containerTop = Bodies.rectangle(397, 70, 755, 20, {
+  const containerTop = Bodies.rectangle(397, 790, 755, 20, {
     isStatic: true,
     isSensor: true,
     render: { fillStyle: "red", opacity: 0.3 },
@@ -170,12 +170,9 @@ onMounted(async () => {
         labels.includes("lose") &&
         labels.some((l) => fruitLabels.includes(l))
       ) {
-        navigateTo({
-          path: "/components/lose",
-          query: {
-            timeSurvived: formattedTime.value,
-          },
-        });
+        window.location.replace(`/lose?timeSurvived=${formattedTime.value}`)
+        //cant do the normal nuxt route page change because 
+        //this is in matter.events.on
       } else if (pair.bodyA.label === pair.bodyB.label) {
         const firstBodyToRemove = Matter.Composite.allBodies(engine.world).find(
           (body) => body.id === pair.bodyA.id,
