@@ -19,7 +19,7 @@ import { ref, onMounted, onBeforeUnmount } from "vue";
 import Matter from "matter-js";
 
 definePageMeta({ ssr: false, middleware: [] });
-const emit = defineEmits(["gameData"]);
+const emit = defineEmits(["gameData", 'leftTab']);
 const { Engine, Render, Runner, Bodies, World, Composite } = Matter;
 
 import { useMatchStore } from "~/stores/match";
@@ -137,7 +137,7 @@ onMounted(async () => {
   const ground = Bodies.rectangle(400, 810, 810, 60, { isStatic: true });
   const leftWall = Bodies.rectangle(10, 200, 60, 1160, { isStatic: true });
   const rightWall = Bodies.rectangle(785, 200, 60, 1160, { isStatic: true });
-  const containerTop = Bodies.rectangle(397, 790, 755, 20, {
+  const containerTop = Bodies.rectangle(397, 70, 755, 20, {
     isStatic: true,
     isSensor: true,
     render: { fillStyle: "red", opacity: 0.3 },
@@ -170,7 +170,8 @@ onMounted(async () => {
         labels.includes("lose") &&
         labels.some((l) => fruitLabels.includes(l))
       ) {
-        window.location.replace(`/lose?timeSurvived=${formattedTime.value}`)
+        //window.location.replace(`/lose?timeSurvived=${timeSurvived}`)
+        //note: uncomment this out later
         //cant do the normal nuxt route page change because 
         //this is in matter.events.on
       } else if (pair.bodyA.label === pair.bodyB.label) {
@@ -225,7 +226,11 @@ onMounted(async () => {
   runner = Runner.create();
   Runner.run(runner, engine);
 
-  
+  document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    window.location.replace(`/lose?timeSurvived=${formattedTime.value}&reason=left`)
+  }
+})
 });
 onBeforeUnmount(() => {
     document.removeEventListener("keydown", handleKeyDown);
