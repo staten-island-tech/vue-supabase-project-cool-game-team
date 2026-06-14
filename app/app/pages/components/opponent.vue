@@ -34,19 +34,21 @@ import { ref, onMounted, onBeforeUnmount, watch } from "vue";
 import Matter from "matter-js";
 import { useMatchStore } from "~/stores/match";
 import {createFruit} from "~/utils/physics"
-import type {OpponentState} from "~/utils/types"
+import type {OpponentState, MoveFruit} from "~/utils/types"
 
 const props = defineProps<{
   state: OpponentState;
-}>();
-///to do: take user movement into account, add merge 
+  opponentMoveFruit: MoveFruit | null;
+}>()
 
+///to do: take user movement into account, add merge 
 const matchStore = useMatchStore();
 const scale = matchStore.scale;
 
 const game = ref<HTMLElement | null>(null);
 
 const { Engine, Render, Runner, Bodies, World, Composite } = Matter;
+let opponentFruit: Matter.Body | null = null;
 
 let engine: Matter.Engine;
 let render: Matter.Render;
@@ -56,18 +58,26 @@ watch(
   () => props.state,
   (newState) => {
     if (!newState || !engine) return;
-    console.log(newState)
-    const fruitType = matchStore.fruitTypes[newState.formattedCurrentFruit.label]!;
-    createFruit(
-      newState.formattedCurrentFruit.x,
-      newState.formattedCurrentFruit.y,
+    const fruitType = matchStore.fruitTypes[newState.formattedCurrentFruit!.label]!;
+    opponentFruit = createFruit(
+      newState.formattedCurrentFruit!.x,
+      newState.formattedCurrentFruit!.y,
       engine,
       fruitType
     )
   },
   { deep: true }
 );
-
+watch(
+  () => props.opponentMoveFruit,
+  (move) => {
+    if (!move || !engine) return;
+    Matter.Body.setPosition(opponentFruit, {
+    x: move.x,
+    y: move.y,
+  });
+  }
+);
 onMounted(() => {
   if (!game.value) return;
 
@@ -129,7 +139,6 @@ onMounted(() => {
           Matter.Composite.remove(engine.world, secondBodyToRemove);
           if (nextFruit) {
             requestAnimationFrame(() => {
-              console.log(nextFruit)
               createFruit(newFruitX, newFruitY, engine, nextFruit[1]);
             });
           }

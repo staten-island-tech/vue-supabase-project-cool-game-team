@@ -20,7 +20,7 @@ import Matter from "matter-js";
 import {createFruit} from "~/utils/physics"
 
 definePageMeta({ ssr: false, middleware: [] });
-const emit = defineEmits(["gameData", 'leftTab']);
+const emit = defineEmits(["gameData", 'leftTab', "moveFruit"]);
 const { Engine, Render, Runner, Bodies, World, Composite } = Matter;
 
 import { useMatchStore } from "~/stores/match";
@@ -132,17 +132,20 @@ onMounted(async () => {
 
   handleKeyDown = (e: KeyboardEvent) => {
     if (!currentFruit) return;
-    const speed = 3;
-    if (e.key === "ArrowLeft")
+    const speed = 10 //in px;
+    if (e.key === "ArrowLeft") {
       Matter.Body.setVelocity(currentFruit, {
         x: -speed,
         y: currentFruit.velocity.y,
       });
-    if (e.key === "ArrowRight")
+    }
+    if (e.key === "ArrowRight") {
       Matter.Body.setVelocity(currentFruit, {
         x: speed,
         y: currentFruit.velocity.y,
-      });
+      })
+
+  ;}
   };
   document.addEventListener("keydown", handleKeyDown);
 
@@ -185,14 +188,21 @@ onMounted(async () => {
       }
     });
   });
+  Matter.Events.on(engine, "afterUpdate", () => {
+  if (!currentFruit) return;
 
+  emit("moveFruit", {
+    x: currentFruit.position.x,
+    y: currentFruit.position.y,
+  });
+});
   spawnIntervalChange = setInterval(() => {
     //to do: fix this
     spawnInterval = getCurrentSpawnInterval();
     currentFruit = createFruit(380,250, engine, selectRandomFruit()!);
     //(280,250) is a midpoint near top of screen
     const formattedCurrentFruit = {
-      id: currentFruit.id,
+        id: currentFruit.id,
         x: currentFruit.position.x,
         y: currentFruit.position.y,
         label: currentFruit.label
