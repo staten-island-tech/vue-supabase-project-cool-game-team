@@ -4,4 +4,4 @@ export const usePlayerStore = defineStore('playerStore', () => {
     const uuid = ref('')
     
     return { uuid }
-}, {persist=true;})
+}, {persist: true})

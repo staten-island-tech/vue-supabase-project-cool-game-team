@@ -20,4 +20,4 @@ export const useMatchStore = defineStore('matchStore', () => {
     const isUserHost = computed(() => currentMatchData.value?.players?.p1 === playerStore.uuid)
     const currentMatchData = computed(() => matches.find(m => m.uuid === currentMatchUUID.value))
     return { matches, inAMatch, currentMatchData, playerUsernames, isMatchFull, isUserHost, currentMatchUUID}
-}, {persist=true;})
+}, {persist: true})
