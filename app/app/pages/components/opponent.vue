@@ -33,7 +33,7 @@
 import { ref, onMounted, onBeforeUnmount, watch } from "vue";
 import Matter from "matter-js";
 import { useMatchStore } from "~/stores/match";
-
+import {createFruit} from "~/utils/physics"
 const props = defineProps<{
   state: any;
 }>();
@@ -50,35 +50,6 @@ let engine: Matter.Engine;
 let render: Matter.Render;
 let runner: Matter.Runner;
 
-function createFruit(
-  x: number,
-  y: number,
-  label: string
-) {
-  const fruitType = matchStore.fruitTypes[label];
-
-  if (!fruitType) return;
-
-  const fruit = Bodies.circle(
-    x,
-    y,
-    fruitType.radius,
-    {
-      render: {
-        sprite: {
-          texture: fruitType.img,
-          xScale: fruitType.scaleFactor,
-          yScale: fruitType.scaleFactor,
-        },
-      },
-    }
-  );
-
-  fruit.label = label;
-
-  Composite.add(engine.world, fruit);
-}
-
 watch(
   () => props.state,
   (newState) => {
@@ -87,6 +58,7 @@ watch(
     createFruit(
       newState.formattedCurrentFruit.x,
       newState.formattedCurrentFruit.y,
+      engine,
       newState.formattedCurrentFruit.label
     )
   },
@@ -154,7 +126,8 @@ onMounted(() => {
           Matter.Composite.remove(engine.world, secondBodyToRemove);
           if (nextFruit) {
             requestAnimationFrame(() => {
-              createFruit(newFruitX, newFruitY, nextFruit[0]);
+              console.log(nextFruit)
+              //createFruit(newFruitX, newFruitY, engine, nextFruit[1]);
             });
           }
         }

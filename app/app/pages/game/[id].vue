@@ -7,7 +7,6 @@
 
 <script setup lang="ts">
 import { io } from 'socket.io-client'
-import { useMatchStore } from '~/stores/match'
 import { ref, onMounted, onBeforeUnmount } from "vue"
 import player from '../components/player.vue'
 import opponent from '../components/opponent.vue'
@@ -25,7 +24,7 @@ onMounted(() => {
     socket.emit('join-game', '123')
   }) //123 is a placeholder
 
-    socket.on('connect_error', (err) => {
+    socket.on('connect_error', (err: string) => {
       console.error(err)
     }
 )

@@ -17,12 +17,14 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from "vue";
 import Matter from "matter-js";
+import {createFruit} from "~/utils/physics"
 
 definePageMeta({ ssr: false, middleware: [] });
 const emit = defineEmits(["gameData", 'leftTab']);
 const { Engine, Render, Runner, Bodies, World, Composite } = Matter;
 
 import { useMatchStore } from "~/stores/match";
+import type { FruitType } from "~/utils/types";
 
 const matchStore = useMatchStore();
 
@@ -41,7 +43,7 @@ function selectRandomFruit(): FruitType | undefined {
   let sum = 0;
   for (const fruit of Object.values(matchStore.fruitTypes)) {
     sum += fruit.selectionProbability;
-    if (random < sum) return fruit;
+    if (random < sum) return fruit!;
   }
 }
 
@@ -64,24 +66,6 @@ async function preloadAllFruits() {
   );
 }
 selectRandomFruit();
-function createNewFruit(x = 380, y = 250, type = selectRandomFruit()) {
-  //default falling x = 380, y = 140
-  const fruit = Bodies.circle(x, y, type.radius, {
-    restitution: 0.5,
-    render: {
-      sprite: {
-        texture: type.img,
-        xScale: type.scaleFactor,
-        yScale: type.scaleFactor,
-      },
-    },
-  });
-  fruit.label = type.img.slice(5, -4);
-  //should i have to resort to this convoluted method for getting fruit name?
-  // no but i structured the data weirdly :sob:
-  Composite.add(engine.world, fruit);
-  return fruit;
-}
 
 const spawnStartInterval = 500; // ms
 const spawnMinInterval = 500; // ms
@@ -196,7 +180,7 @@ onMounted(async () => {
 
           Matter.Composite.remove(engine.world, firstBodyToRemove);
           Matter.Composite.remove(engine.world, secondBodyToRemove);
-          if (nextFruit) createNewFruit(newFruitX, newFruitY, nextFruit[1]);
+          if (nextFruit) createFruit(newFruitX, newFruitY, engine, nextFruit[1]);
         }
       }
     });
@@ -205,7 +189,8 @@ onMounted(async () => {
   spawnIntervalChange = setInterval(() => {
     //to do: fix this
     spawnInterval = getCurrentSpawnInterval();
-    currentFruit = createNewFruit();
+    currentFruit = createFruit(380,250, engine, selectRandomFruit()!);
+    //(280,250) is a midpoint near top of screen
     const formattedCurrentFruit = {
       id: currentFruit.id,
         x: currentFruit.position.x,
