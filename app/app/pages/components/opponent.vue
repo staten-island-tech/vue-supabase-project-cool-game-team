@@ -1,25 +1,130 @@
 <template>
-  <div :style="{ width: 800 * scale + 'px', height: 900 * scale + 'px' }" class="relative bg-black overflow-hidden">
-    <div v-if="!state" class="text-white p-4">Waiting for opponent...</div>
-    <div v-else :style="{ transform: `scale(${scale})`, transformOrigin: 'top left', width: '800px', height: '900px' }">
-      <div v-for="fruit in state.fruits" :key="fruit.id"
-          :style="{ position: 'absolute', left: fruit.x + 'px', top: fruit.y + 'px', transform: 'translate(-50%, -50%)' }">
-        <img :src="fruitTypes[fruit.label]?.img"
-             :style="{ width: fruitTypes[fruit.label]?.radius * 2 + 'px' }" />
+  <div
+    :style="{ width: scale * 800 + 'px', height: scale * 900 + 'px' }"
+    class="overflow-hidden relative"
+  >
+    <div
+      :style="{
+        transform: `scale(${scale})`,
+        transformOrigin: 'top left',
+        position: 'absolute'
+      }"
+      ref="game"
+    />
+
+    <div
+      v-if="state"
+      :style="{
+        transform: `scale(${scale})`,
+        transformOrigin: 'top left',
+        position: 'absolute',
+        top: 0,
+        right: 0
+      }"
+    >
+      <div class="text-white text-4xl font-extrabold m-2">
+        Time Survived: {{ state.timeSurvived }}
       </div>
-      <p class="absolute top-0 right-0 text-white text-4xl font-extrabold m-2">{{ state.timeSurvived }}</p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-const props = defineProps(['state'])
+import { ref, onMounted, onBeforeUnmount, watch } from "vue";
+import Matter from "matter-js";
+import { useMatchStore } from "~/stores/match";
 
-definePageMeta({ ssr: false, middleware: [] });
-import { useMatchStore } from '~/stores/match'
+const props = defineProps<{
+  state: any;
+}>();
 
-const matchStore = useMatchStore()
-const fruitTypes = matchStore.fruitTypes
-const scale = matchStore.scale
+const matchStore = useMatchStore();
+const scale = matchStore.scale;
 
+const game = ref<HTMLElement | null>(null);
+
+const { Engine, Render, Runner, Bodies, Composite } = Matter;
+
+let engine: Matter.Engine;
+let render: Matter.Render;
+let runner: Matter.Runner;
+
+function createFruit(
+  id: number,
+  x: number,
+  y: number,
+  label: string
+) {
+  const fruitType = matchStore.fruitTypes[label];
+
+  if (!fruitType) return;
+
+  const fruit = Bodies.circle(
+    x,
+    y,
+    fruitType.radius,
+    {
+      isStatic: true,
+      render: {
+        sprite: {
+          texture: fruitType.img,
+          xScale: fruitType.scaleFactor,
+          yScale: fruitType.scaleFactor,
+        },
+      },
+    }
+  );
+
+  fruit.label = label;
+
+  Composite.add(engine.world, fruit);
+}
+
+watch(
+  () => props.state,
+  (newState) => {
+    if (!newState || !engine) return;
+
+    Composite.clear(engine.world, false);
+
+    newState.fruits.forEach((fruit: any) => {
+      createFruit(
+        fruit.id,
+        fruit.x,
+        fruit.y,
+        fruit.label
+      );
+    });
+  },
+  { deep: true }
+);
+
+onMounted(() => {
+  if (!game.value) return;
+
+  engine = Engine.create();
+
+  render = Render.create({
+    element: game.value,
+    engine,
+    options: {
+      width: 800,
+      height: 900,
+      wireframes: false,
+    },
+  });
+
+  Render.run(render);
+
+  runner = Runner.create();
+  Runner.run(runner, engine);
+});
+
+onBeforeUnmount(() => {
+  if (render) Render.stop(render);
+  if (runner) Runner.stop(runner);
+  if (engine) Engine.clear(engine);
+
+  render?.canvas?.remove();
+});
 </script>

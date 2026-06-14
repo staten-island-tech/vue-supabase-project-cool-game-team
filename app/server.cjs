@@ -2,8 +2,9 @@ const { Server } = require('socket.io')
 
 const io = new Server(3002, {
   cors: { 
-    origin: ['http://localhost:3000', 'http://localhost:3001'],
-    methods: ['GET', 'POST']
+    origin: '*',
+    methods: ['GET', 'POST'],
+    credentials: false
   }
 })
 
@@ -12,11 +13,13 @@ io.on('connection', (socket) => {
   socket.on('join-game', (roomId) => {
     socket.join(roomId)
   })
-
+  socket.onAny((event, ...args) => {
+    console.log('ANY event received:', event, args)
+  })
   socket.on('game-state', (roomId, state) => {
+    console.log('game-state received:', roomId)
     console.log(roomId, state)
     socket.to(roomId).emit('opponent-state', state)
   })
 })
 
-console.log('Socket.io server running on port 3001')

@@ -87,7 +87,7 @@ const spawnStartInterval = 500; // ms
 const spawnMinInterval = 500; // ms
 const speedStepInterval = 10000; // decrease every 10s
 const spawnDecreaseAmount = 100; // ms reduction per step
-
+let handleKeyDown: ((e: KeyboardEvent) => void) | null = null
 let spawnInterval = spawnStartInterval;
 let timeSurvived = 0;
 let formattedTime = ref("");
@@ -146,7 +146,7 @@ onMounted(async () => {
 
   World.add(engine.world, [ground, leftWall, rightWall, containerTop]);
 
-  const handleKeyDown = (e: KeyboardEvent) => {
+  handleKeyDown = (e: KeyboardEvent) => {
     if (!currentFruit) return;
     const speed = 3;
     if (e.key === "ArrowLeft")
@@ -181,7 +181,7 @@ onMounted(async () => {
         const secondBodyToRemove = Matter.Composite.allBodies(
           engine.world,
         ).find((body) => body.id === pair.bodyB.id);
-        if (firstBodyToRemove || secondBodyToRemove) {
+        if (firstBodyToRemove && secondBodyToRemove) { 
           const fruitTypesArray = Object.entries(matchStore.fruitTypes);
           const index = fruitTypesArray.findIndex(
             ([name]) => name === pair.bodyA.label,
@@ -213,9 +213,9 @@ onMounted(async () => {
         y: b.position.y,
         label: b.label,
       }));
-      console.log('emitting:', fruits.length, 'fruits') 
     emit("gameData", { fruits, timeSurvived: formattedTime.value });
   }, spawnInterval);
+    
 
   setInterval(() => {
     timeSurvived += 1000;
@@ -228,12 +228,15 @@ onMounted(async () => {
 
   document.addEventListener('visibilitychange', () => {
   if (document.hidden) {
-    window.location.replace(`/lose?timeSurvived=${formattedTime.value}&reason=left`)
+    //window.location.replace(`/lose?timeSurvived=${formattedTime.value}&reason=left`)
+    //note: uncomment out later 
   }
 })
 });
 onBeforeUnmount(() => {
-    document.removeEventListener("keydown", handleKeyDown);
+    if (handleKeyDown) {
+    document.removeEventListener("keydown", handleKeyDown)
+  }
   });
   
 onBeforeUnmount(() => {

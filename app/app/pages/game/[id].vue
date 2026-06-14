@@ -17,28 +17,31 @@ definePageMeta({ ssr: false, middleware: [] })
 const matchStore = useMatchStore()
 
 const opponentState = ref<any>(null)
-const socket = io('http://localhost:3002', { reconnection: true })
+let socket: any = null
+const connected = ref(false)
 //to do: for the final version make it not local host
-socket.on('connect', () => console.log('connected'))
+onMounted(() => {
+  socket = io('http://localhost:3002')
 
+  socket.on('connect', () => {
+    connected.value = true
+    socket.emit('join-game', '123')
+  }) //123 is a placeholder
+
+    socket.on('connect_error', (err) => {
+      console.error(err)
+    }
+)
+
+  socket.on('opponent-state', (state: any) => {
+    opponentState.value = state
+  })
+})
 function sendToSocket(data: any) {
-  socket.emit('game-state', matchStore.currentMatchUUID, data)
+  if (!connected.value) return
+  socket.emit('game-state', '123', data)
   opponentState.value = data
 }
-
-onMounted(() => {
-  socket.emit('join-game', matchStore.currentMatchUUID)
-
-  socket.on('opponent-state', (state) => {
-    opponentState.value = state
-    console.log('opponent state:', state)
-  })
-  //to do: the syncing gets hella messed up when the user goes to another tab or app
-  //make opponent disconnected/you disconnected page 
-  socket.on('error', (err) => console.error('socket error:', err))
-socket.on('disconnect', (reason) => console.log('disconnected:', reason))
-})
-
 onBeforeUnmount(() => {
   socket.disconnect()
 })
