@@ -196,7 +196,6 @@ onMounted(async () => {
 
           Matter.Composite.remove(engine.world, firstBodyToRemove);
           Matter.Composite.remove(engine.world, secondBodyToRemove);
-          emit('gameData', {merge: {x: newFruitX, y: newFruitY, label: nextFruit[1]}})
           if (nextFruit) createNewFruit(newFruitX, newFruitY, nextFruit[1]);
         }
       }

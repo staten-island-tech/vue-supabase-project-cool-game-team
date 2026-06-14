@@ -51,7 +51,6 @@ let render: Matter.Render;
 let runner: Matter.Runner;
 
 function createFruit(
-  id: number,
   x: number,
   y: number,
   label: string
@@ -86,7 +85,6 @@ watch(
     if (!newState || !engine) return;
 
     createFruit(
-      newState.formattedCurrentFruit.id,
       newState.formattedCurrentFruit.x,
       newState.formattedCurrentFruit.y,
       newState.formattedCurrentFruit.label
@@ -120,7 +118,50 @@ onMounted(() => {
     label: "lose",
   });
   World.add(engine.world, [ground, leftWall, rightWall, containerTop]);
-  
+   Matter.Events.on(engine, "collisionStart", (event) => {
+    event.pairs.forEach((pair) => {
+      const labels = [pair.bodyA.label, pair.bodyB.label];
+      const fruitLabels = Object.keys(matchStore.fruitTypes);
+      if (
+        labels.includes("lose") &&
+        labels.some((l) => fruitLabels.includes(l))
+      ) {
+        //window.location.replace(`/lose?timeSurvived=${timeSurvived}`)
+        //note: uncomment this out later
+        //cant do the normal nuxt route page change because 
+        //this is in matter.events.on
+      } else if (pair.bodyA.label === pair.bodyB.label) {
+        //merge fruit code
+        const firstBodyToRemove = Matter.Composite.allBodies(engine.world).find(
+          (body) => body.id === pair.bodyA.id,
+        );
+        const secondBodyToRemove = Matter.Composite.allBodies(
+          engine.world,
+        ).find((body) => body.id === pair.bodyB.id);
+        if (firstBodyToRemove && secondBodyToRemove) { 
+          const fruitTypesArray = Object.entries(matchStore.fruitTypes);
+          const index = fruitTypesArray.findIndex(
+            ([name]) => name === pair.bodyA.label,
+          );
+          const nextFruit = fruitTypesArray[index + 1];
+
+          const newFruitX =
+            (firstBodyToRemove.position.x + secondBodyToRemove.position.x) / 2;
+          const newFruitY =
+            (firstBodyToRemove.position.y + secondBodyToRemove.position.y) / 2;
+
+          Matter.Composite.remove(engine.world, firstBodyToRemove);
+          Matter.Composite.remove(engine.world, secondBodyToRemove);
+          if (nextFruit) {
+            requestAnimationFrame(() => {
+              createFruit(newFruitX, newFruitY, nextFruit[0]);
+            });
+          }
+        }
+      }
+    });
+  })
+
   Render.run(render);
   
   runner = Runner.create();

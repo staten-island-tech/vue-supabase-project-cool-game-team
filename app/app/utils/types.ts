@@ -1,10 +1,10 @@
-export type FruitType {
+export type FruitType = {
         img: string;
         radius: number;
         scaleFactor?: number;
         selectionProbability: number;
 };
-export type OpponentState {
+export type OpponentState = {
     formattedCurrentFruit?: {
         x: number,
         y: number,

@@ -13,9 +13,6 @@ import player from '../components/player.vue'
 import opponent from '../components/opponent.vue'
 
 definePageMeta({ ssr: false, middleware: [] })
-
-const matchStore = useMatchStore()
-
 const opponentState = ref<any>(null)
 let socket: any = null
 const connected = ref(false)
