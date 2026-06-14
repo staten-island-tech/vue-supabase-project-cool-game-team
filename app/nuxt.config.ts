@@ -16,6 +16,10 @@ export default defineNuxtConfig({
     experimental: {
       websocket: true
     }
+  },runtimeConfig: {
+    public: {
+      socketUrl: process.env.NUXT_SOCKET_URL
+    }
   },
   debug:true,
   hooks: {

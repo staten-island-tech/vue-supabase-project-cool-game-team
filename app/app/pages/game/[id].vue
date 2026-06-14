@@ -23,19 +23,18 @@ let socket: any = null
 const connected = ref(false)
 //to do: for the final version make it not local host
 onMounted(() => {
-  socket = io('http://localhost:3002')
+  socket = io('https://game-server-code-production.up.railway.app')
 
   socket.on('connect', () => {
     connected.value = true
+    console.log('connect')
     socket.emit('join-game', roomId)
   }) 
 
   socket.on('opponent-state', (state: any) => {
     opponentState.value = state
   })
-  socket.on('opponent-move-fruit', (data: MoveFruit) => {
-    if (!socket.connected) return;
-    
+  socket.on('opponent-move-fruit', (data: MoveFruit) => {    
     opponentMoveFruit.value = data
   })
 })
