@@ -205,15 +205,13 @@ onMounted(async () => {
   spawnIntervalChange = setInterval(() => {
     spawnInterval = getCurrentSpawnInterval();
     currentFruit = createNewFruit();
-    const fruits = Matter.Composite.allBodies(engine.world)
-      .filter((b) => !b.isStatic && b.label !== "lose")
-      .map((b) => ({
-        id: b.id,
-        x: b.position.x,
-        y: b.position.y,
-        label: b.label,
-      }));
-    emit("gameData", { fruits, timeSurvived: formattedTime.value });
+    const formattedCurrentFruit = {
+      id: currentFruit.id,
+        x: currentFruit.position.x,
+        y: currentFruit.position.y,
+        label: currentFruit.label
+    }
+    emit("gameData", { formattedCurrentFruit, timeSurvived: formattedTime.value });
   }, spawnInterval);
     
 
