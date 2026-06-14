@@ -34,8 +34,10 @@ import { ref, onMounted, onBeforeUnmount, watch } from "vue";
 import Matter from "matter-js";
 import { useMatchStore } from "~/stores/match";
 import {createFruit} from "~/utils/physics"
+import type {OpponentState} from "~/utils/types"
+
 const props = defineProps<{
-  state: any;
+  state: OpponentState;
 }>();
 ///to do: take user movement into account, add merge 
 
@@ -54,12 +56,13 @@ watch(
   () => props.state,
   (newState) => {
     if (!newState || !engine) return;
-
+    console.log(newState)
+    const fruitType = matchStore.fruitTypes[newState.formattedCurrentFruit.label]!;
     createFruit(
       newState.formattedCurrentFruit.x,
       newState.formattedCurrentFruit.y,
       engine,
-      newState.formattedCurrentFruit.label
+      fruitType
     )
   },
   { deep: true }
@@ -127,7 +130,7 @@ onMounted(() => {
           if (nextFruit) {
             requestAnimationFrame(() => {
               console.log(nextFruit)
-              //createFruit(newFruitX, newFruitY, engine, nextFruit[1]);
+              createFruit(newFruitX, newFruitY, engine, nextFruit[1]);
             });
           }
         }
