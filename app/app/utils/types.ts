@@ -15,7 +15,6 @@ export type OpponentState = {
     //or should i merge it, use this somewhere
 }
 export type MoveFruit = {
-    id: number,
-    x: number,
-    y: number
+    vx: number,
+    vy: number
 }

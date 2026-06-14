@@ -22,9 +22,6 @@
         right: 0
       }"
     >
-      <div class="text-white text-4xl font-extrabold m-2">
-        Time Survived: {{ state.timeSurvived }}
-      </div>
     </div>
   </div>
 </template>
@@ -72,10 +69,10 @@ watch(
   () => props.opponentMoveFruit,
   (move) => {
     if (!move || !engine) return;
-    Matter.Body.setPosition(opponentFruit, {
-    x: move.x,
-    y: move.y,
-  });
+  Matter.Body.setVelocity(opponentFruit!, {
+    x: move.vx,
+    y: move.vy 
+  })
   }
 );
 onMounted(() => {
@@ -92,7 +89,7 @@ onMounted(() => {
       wireframes: false,
     },
   });
-
+  
   const ground = Bodies.rectangle(400, 810, 810, 60, { isStatic: true });
   const leftWall = Bodies.rectangle(10, 200, 60, 1160, { isStatic: true });
   const rightWall = Bodies.rectangle(785, 200, 60, 1160, { isStatic: true });

@@ -67,7 +67,7 @@ async function preloadAllFruits() {
 }
 selectRandomFruit();
 
-const spawnStartInterval = 500; // ms
+const spawnStartInterval = 2000; // ms
 const spawnMinInterval = 500; // ms
 const speedStepInterval = 10000; // decrease every 10s
 const spawnDecreaseAmount = 100; // ms reduction per step
@@ -129,6 +129,7 @@ onMounted(async () => {
   });
 
   World.add(engine.world, [ground, leftWall, rightWall, containerTop]);
+  
 
   handleKeyDown = (e: KeyboardEvent) => {
     if (!currentFruit) return;
@@ -148,7 +149,7 @@ onMounted(async () => {
   ;}
   };
   document.addEventListener("keydown", handleKeyDown);
-
+  
   Matter.Events.on(engine, "collisionStart", (event) => {
     event.pairs.forEach((pair) => {
       const labels = [pair.bodyA.label, pair.bodyB.label];
@@ -192,8 +193,8 @@ onMounted(async () => {
   if (!currentFruit) return;
 
   emit("moveFruit", {
-    x: currentFruit.position.x,
-    y: currentFruit.position.y,
+    vx: currentFruit.velocity.x,
+    vy: currentFruit.velocity.y
   });
 });
   spawnIntervalChange = setInterval(() => {

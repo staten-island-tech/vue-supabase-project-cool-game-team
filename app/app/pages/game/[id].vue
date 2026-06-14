@@ -12,6 +12,10 @@ import player from '../components/player.vue'
 import opponent from '../components/opponent.vue'
 import type {MoveFruit} from "~/utils/types"
 
+import { useMatchStore } from "~/stores/match";
+const matchStore = useMatchStore();
+const roomId = matchStore.currentMatchUUID
+
 definePageMeta({ ssr: false, middleware: [] })
 const opponentState = ref<any>(null)
 const opponentMoveFruit = ref<MoveFruit | null>(null)
@@ -23,8 +27,8 @@ onMounted(() => {
 
   socket.on('connect', () => {
     connected.value = true
-    socket.emit('join-game', '123')
-  }) //123 is a placeholder
+    socket.emit('join-game', roomId)
+  }) 
 
   socket.on('opponent-state', (state: any) => {
     opponentState.value = state
@@ -37,12 +41,12 @@ onMounted(() => {
 })
 function sendCreatedFruit(data: any) {
   if (!connected.value) return
-  socket.emit('game-state', '123', data)
+  socket.emit('game-state', roomId, data)
   opponentState.value = data
 }
 
 function sendFruitMove(data: { id: number, x: number; y: number }) {
-  socket.emit("move-fruit", '123', data);
+  socket.emit("move-fruit", roomId, data);
 }
 
 onBeforeUnmount(() => {
