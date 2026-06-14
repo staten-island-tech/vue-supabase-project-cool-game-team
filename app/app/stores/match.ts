@@ -1,9 +1,7 @@
 import { defineStore } from 'pinia'
 import type { Database } from '../../database.types'
 import { usePlayerStore } from './player'
-
-
-
+import type { FruitType } from "../utils/types";
 
 type Match = Database['public']['Tables']['matches']['Row']
 
@@ -14,13 +12,6 @@ export const useMatchStore = defineStore('matchStore', () => {
     const inAMatch = ref(false)
     const currentMatchUUID = ref('')
     const playerUsernames = reactive<string[]>([])
-
-    type FruitType = {
-        img: string;
-        radius: number;
-        scaleFactor?: number;
-        selectionProbability: number;
-    };
 
     const fruitTypes: Record<string, FruitType> = {
     cherry:     { img: '/img/cherry.png',     radius: 120, selectionProbability: 1 },

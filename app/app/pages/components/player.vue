@@ -175,6 +175,7 @@ onMounted(async () => {
         //cant do the normal nuxt route page change because 
         //this is in matter.events.on
       } else if (pair.bodyA.label === pair.bodyB.label) {
+        //merge fruit code
         const firstBodyToRemove = Matter.Composite.allBodies(engine.world).find(
           (body) => body.id === pair.bodyA.id,
         );
@@ -195,7 +196,7 @@ onMounted(async () => {
 
           Matter.Composite.remove(engine.world, firstBodyToRemove);
           Matter.Composite.remove(engine.world, secondBodyToRemove);
-
+          emit('gameData', {merge: {x: newFruitX, y: newFruitY, label: nextFruit[1]}})
           if (nextFruit) createNewFruit(newFruitX, newFruitY, nextFruit[1]);
         }
       }
@@ -203,6 +204,7 @@ onMounted(async () => {
   });
 
   spawnIntervalChange = setInterval(() => {
+    //to do: fix this
     spawnInterval = getCurrentSpawnInterval();
     currentFruit = createNewFruit();
     const formattedCurrentFruit = {
