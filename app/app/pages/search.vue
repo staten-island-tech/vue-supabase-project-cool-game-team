@@ -19,7 +19,7 @@ if (user.value?.sub) {
 }
 
 if(inAMatch.value === false){
-  playerUsernames.value = []
+  playerUsernames.value = []  
 }
 
 
@@ -33,13 +33,20 @@ type Player = Match['players']
 const { data, error } = await supabase.from('matches').select('*')
 if(data){
     data.forEach((m) => {
-        if(Object.keys(m.players).length < 2){
-            matches.value.push(m)
-        }
+      if(Object.keys(m.players).length < 2){
+          matches.value.push(m)
+      }
+      const players = m.players as unknown as Player
+      if (players.p1 === playerStore.uuid || players.p2 === playerStore.uuid) {
+        currentMatchUUID.value = m.uuid
+        inAMatch.value = true
+      }
     })
 }
-matches.value.[0].players
-if(Object.values(matches.value.[0].players))
+ 
+if (inAMatch.value && currentMatchData.value) {
+  await fetchUsernames(currentMatchData.value.players as unknown as Player)
+}
 await supabase.realtime.setAuth()
 
 /**
@@ -119,9 +126,13 @@ async function fetchUsernames(players: Player): Promise<void> {
 async function createMatch(): Promise<void> {
   const { data, error } = await supabase.from('matches').insert({ players: { p1: playerStore.uuid } }).select("*").single();
   if (error || !data) return console.error(error)
+  if (!matches.value.find(m => m.uuid === data.uuid)) {
+    matches.value.push(data)
+  }
   currentMatchUUID.value = data.uuid
   inAMatch.value=true
   await fetchUsernames(data.players as unknown as Player)
+
   
 }
 
