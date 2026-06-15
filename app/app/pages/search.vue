@@ -70,9 +70,11 @@ const changes = supabase.channel('matches:players',{
     table: 'matches'
 }, async(payload) => {
     switch(payload.eventType){
-        case 'INSERT':{
-            if(Object.keys(payload.new.players).length < 2) matches.value.push(payload.new as Match)
-            break
+        case 'INSERT': {
+          if (!matches.value.some(m => m.uuid === payload.new.uuid) && Object.keys(payload.new.players as object).length < 2) {
+            matches.value.push(payload.new as Match)
+          }
+          break
         }
         case 'DELETE': {
             const index = matches.value.findIndex(match => match.uuid === payload.old.uuid)
@@ -85,28 +87,18 @@ const changes = supabase.channel('matches:players',{
         }
         case 'UPDATE': {
             const index = matches.value.findIndex(m => m.uuid === payload.new.uuid)
-            const players = payload.new.players as object ?? {}
-            console.log('UPDATE received, index:', index, 'players:', players)
-            console.log('currentMatchUUID:', currentMatchUUID.value)
-            console.log('matches UUIDs:', matches.value.map(m => m.uuid))
             if (index !== -1) {
-              if (Object.keys(payload.new.players as object).length >= 2 && payload.new.uuid !== currentMatchUUID.value) {
-                  matches.value.splice(index, 1)
+              if (Object.keys(payload.new.players as object).length >= 2 && payload.new.uuid !== matchStore.currentMatchUUID) {
+                matches.value.splice(index, 1)
               } else {
-                  matches.value[index] = payload.new as Match
+                matches.value.splice(index, 1, payload.new as Match)
               }
             }
-            
-            console.log('AFTER update')
-            console.log('currentMatchData:', JSON.stringify(currentMatchData.value))
-            console.log('isMatchFull:', isMatchFull.value)
-            console.log('isUserHost:', isUserHost.value)
-            
-            if (inAMatch.value && payload.new.uuid === currentMatchUUID.value) {
-                await fetchUsernames(players as unknown as Player)
+            if (inAMatch.value && payload.new.uuid === matchStore.currentMatchUUID) {
+              await fetchUsernames(payload.new.players as unknown as Player)
             }
-            if (payload.new.uuid === currentMatchUUID.value && payload.new.started === true) {
-                await navigateTo(`/game/${currentMatchUUID.value}`)
+            if (payload.new.uuid === matchStore.currentMatchUUID && payload.new.started === true) {
+              await navigateTo(`/game/${matchStore.currentMatchUUID}`)
             }
             break
         }
@@ -138,9 +130,7 @@ async function fetchUsernames(players: Player): Promise<void> {
 async function createMatch(): Promise<void> {
   const { data, error } = await supabase.from('matches').insert({ players: { p1: playerStore.uuid } }).select("*").single();
   if (error || !data) return console.error(error)
-  if (!matches.value.find(m => m.uuid === data.uuid)) {
-    matches.value.push(data)
-  }
+  matches.value.push(data)
   currentMatchUUID.value = data.uuid
   inAMatch.value=true
   await fetchUsernames(data.players as unknown as Player)

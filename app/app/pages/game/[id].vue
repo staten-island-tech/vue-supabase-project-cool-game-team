@@ -15,7 +15,6 @@ import { storeToRefs } from 'pinia'
 
 import { useMatchStore } from "~/stores/match";
 const matchStore = useMatchStore();
-const roomId = matchStore.currentMatchUUID
 
 definePageMeta({ ssr: false, middleware: [] })
 const opponentState = ref<any>(null)
@@ -29,7 +28,7 @@ onMounted(() => {
   socket.on('connect', () => {
     connected.value = true
     console.log('connect')
-    socket.emit('join-game', roomId)
+    socket.emit('join-game', matchStore.currentMatchUUID)
   }) 
 
   socket.on('opponent-state', (state: any) => {
@@ -50,7 +49,7 @@ onMounted(() => {
   })
 })
 function handleLose(timeSurvived: string) {
-  socket.emit('player-lost', roomId, timeSurvived)
+  socket.emit('player-lost', matchStore.currentMatchUUID, timeSurvived)
   const match = useMatchStore();
   const { matches, inAMatch, currentMatchUUID, playerUsernames } = storeToRefs(match);
   matches.value = []
@@ -62,12 +61,12 @@ function handleLose(timeSurvived: string) {
 
 function sendCreatedFruit(data: any) {
   if (!connected.value) return
-  socket.emit('game-state', roomId, data)
+  socket.emit('game-state', matchStore.currentMatchUUID, data)
   opponentState.value = data
 }
 
 function sendFruitMove(data: { id: number, x: number; y: number }) {
-  socket.emit("move-fruit", roomId, data);
+  socket.emit("move-fruit", matchStore.currentMatchUUID, data);
 }
 
 onBeforeUnmount(() => {
