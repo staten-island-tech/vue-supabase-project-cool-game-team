@@ -86,6 +86,11 @@ const changes = supabase.channel('matches:players',{
         case 'UPDATE': {
             const index = matches.value.findIndex(m => m.uuid === payload.new.uuid)
             console.log('UPDATE received, index in matches:', index, 'players:', payload.new.players)
+              console.log(JSON.stringify(currentMatchData.value))
+              console.log(isMatchFull.value)
+              console.log(isUserHost.value)
+              console.log(playerStore.uuid)
+              console.log(currentMatchData.value?.players?.p1)
             if (index !== -1) {
             if (Object.keys(payload.new.players).length >= 2) {
                 matches.value.splice(index, 1)
