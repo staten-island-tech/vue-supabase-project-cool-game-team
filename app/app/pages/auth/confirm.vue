@@ -14,14 +14,12 @@ const { data, error } = await supabase.auth.verifyOtp({
   token_hash: hash,
   type: 'email',
 });
-console.log('verify session', data.session);
 
 
 const {
   data: { session },
 } = await supabase.auth.getSession();
 
-console.log('current session', session);
 
 if (error) {
   await navigateTo('/error', { redirectCode: 401 });
