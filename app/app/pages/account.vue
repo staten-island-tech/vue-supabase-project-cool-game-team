@@ -96,10 +96,10 @@ async function logout() {
   if (error === null) {
 
     uuid.value = '';
-    matches.value = []
+    matches.value.length = 0
     inAMatch.value= false
     currentMatchUUID.value = ''
-    playerUsernames.value = []
+    playerUsernames.value.length = 0
     
     await navigateTo({ path: '/' })
   }

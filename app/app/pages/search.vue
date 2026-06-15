@@ -4,7 +4,7 @@
  */
 definePageMeta({middleware: 'auth'})
 import { reactive, computed } from 'vue'
-import type { Database } from '../../database.types'
+import type { Database } from '../types/database.types'
 import { usePlayerStore } from '~/stores/player'
 import { useMatchStore } from '~/stores/match'
 import { storeToRefs } from 'pinia'
@@ -13,7 +13,7 @@ const user = useSupabaseUser()
 const playerStore = usePlayerStore()
 const matchStore = useMatchStore()
 const {  matches, inAMatch, currentMatchData, playerUsernames, isMatchFull, isUserHost, currentMatchUUID } = storeToRefs(matchStore)
-matches.value=[]
+matches.value.length = 0
 
 const { data: { session }} = await supabase.auth.getSession()
 if (session?.user) {
@@ -35,9 +35,10 @@ type Player = Match['players']
 const { data, error } = await supabase.from('matches').select('*')
 if(data){
     data.forEach((m) => {
-        if(Object.keys(m.players).length < 2){
-            matches.value.push(m)
-        }
+      const isUserinMatch = m.players.p1 === playerStore.uuid || m.players.p2 === playerStore.uuid
+      if (Object.keys(m.players).length < 2 || isUserinMatch) {
+        matches.value.push(m)
+      }
     })
 }
 matches.value.forEach((m) => {

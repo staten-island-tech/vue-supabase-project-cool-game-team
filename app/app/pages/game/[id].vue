@@ -40,10 +40,10 @@ onMounted(() => {
   socket.on('opponent-lost', async(timeSurvived: string) => {
     const match = useMatchStore();
     const { matches, inAMatch, currentMatchUUID, playerUsernames } = storeToRefs(match);
-    matches.value = []
+    matches.value.length = 0
     inAMatch.value= false
     currentMatchUUID.value = ''
-    playerUsernames.value = []
+    playerUsernames.value.length = 0
     await useSupabaseClient().rpc('increment_wins')
     window.location.replace(`/win?timeSurvived=${timeSurvived}`)
   })
@@ -52,10 +52,10 @@ function handleLose(timeSurvived: string) {
   socket.emit('player-lost', matchStore.currentMatchUUID, timeSurvived)
   const match = useMatchStore();
   const { matches, inAMatch, currentMatchUUID, playerUsernames } = storeToRefs(match);
-  matches.value = []
+  matches.value.length = 0
   inAMatch.value= false
   currentMatchUUID.value = ''
-  playerUsernames.value = []
+  playerUsernames.value.length = 0
   window.location.replace(`/lose?timeSurvived=${timeSurvived}`)
 }
 
