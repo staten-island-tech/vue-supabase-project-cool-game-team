@@ -103,7 +103,6 @@ onUnmounted(() => {supabase.removeChannel(changes)})
  * @param players Player Object e.g. {p1: 'uuid1', p2: 'uuid2'}
  */
 async function fetchUsernames(players: Player): Promise<void> {
-  playerUsernames.value.length = 0
   const uuids = Object.values(players as object).filter((uuid): uuid is string => uuid !== null)
   const results = await Promise.all(
     uuids.map(async (uuid) => {
@@ -112,12 +111,13 @@ async function fetchUsernames(players: Player): Promise<void> {
         .select('username')
         .eq('id', uuid)
         .single()
-      console.log('uuid:', uuid, 'data:', data, 'error:', error) 
-      return (data ?? 'Unknown') as string
+      console.log('uuid:', uuid, 'data:', data, 'error:', error)
+      return data?.username ?? 'Unknown'
     })
   )
   playerUsernames.value = results
 }
+
 
 /**
  * Creates a new match with the current user as the host and adds it to the matches array
@@ -271,12 +271,13 @@ async function startMatch(){
           >
             <div class="avatar placeholder">
               <div class="bg-primary text-primary-content rounded-full w-8 flex items-center justify-center">
-                <span class="text-sm font-black">{{ username.username.charAt(0).toUpperCase() }}</span>
+                <span class="text-sm font-black">{{ username.charAt(0).toUpperCase() }}</span>
               </div>
             </div>
-            <span class="font-mono text-xs text-base-content/60">{{ username.username }}</span>
+            <span class="font-mono text-xs text-base-content/60">{{ username }}</span>
             <div v-if="index === 0" class="badge badge-warning badge-sm ml-auto">Host</div>
           </div>
+
           <!-- Empty slot -->
           <div v-if="Object.keys(currentMatchData?.players || {}).length < 2" class="flex items-center gap-3 bg-base-200/50 rounded-xl px-4 py-3 border border-dashed border-base-content/20">
             <div class="avatar placeholder">
