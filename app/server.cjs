@@ -2,7 +2,7 @@
 // had to be on another repo or else it would try to deploy the whole repo including nuxt
 // commented out the code and didnt delete because it might be useful if 
 // doing testing on local host in the future
-/* const { createServer } = require("http")
+const { createServer } = require("http")
 const { Server } = require("socket.io")
 
 const PORT = process.env.PORT || 3002
@@ -15,7 +15,7 @@ const io = new Server(httpServer, {
     methods: ["GET", "POST"]
   }
 });
-})
+
 
 io.on("connection", (socket) => {
   console.log("connected:", socket.id)
@@ -33,7 +33,10 @@ io.on("connection", (socket) => {
     socket.to(roomId).emit("opponent-move-fruit", data)
   })
 })
+  socket.on('player-lost', (roomId, timeSurvived) => {
+  socket.to(roomId).emit('opponent-lost', timeSurvived) 
+})
 
 httpServer.listen(PORT, () => {
   console.log("Socket server running on", PORT)
-}) */
+}) 

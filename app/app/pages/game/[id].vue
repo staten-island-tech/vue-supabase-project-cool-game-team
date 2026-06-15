@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-row overflow-hidden w-screen h-screen">
-    <player @gameData="sendCreatedFruit" @moveFruit="sendFruitMove"/>
+    <player @gameData="sendCreatedFruit" @moveFruit="sendFruitMove" @lose="handleLose"/>
     <opponent :state="opponentState" :opponentMoveFruit="opponentMoveFruit"/>
   </div>
 </template>
@@ -37,7 +37,15 @@ onMounted(() => {
   socket.on('opponent-move-fruit', (data: MoveFruit) => {    
     opponentMoveFruit.value = data
   })
+  socket.on('opponent-lost', (timeSurvived: string) => {
+    window.location.replace(`/win?timeSurvived=${timeSurvived}`)
+  })
 })
+function handleLose(timeSurvived: string) {
+  socket.emit('player-lost', roomId, timeSurvived) 
+  window.location.replace(`/lose?timeSurvived=${timeSurvived}`)
+}
+
 function sendCreatedFruit(data: any) {
   if (!connected.value) return
   socket.emit('game-state', roomId, data)

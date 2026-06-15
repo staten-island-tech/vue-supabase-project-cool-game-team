@@ -20,7 +20,7 @@ import Matter from "matter-js";
 import {createFruit} from "~/utils/physics"
 
 definePageMeta({ ssr: false, middleware: [] });
-const emit = defineEmits(["gameData", 'leftTab', "moveFruit"]);
+const emit = defineEmits(["gameData", 'leftTab', "moveFruit", "lose"]);
 const { Engine, Render, Runner, Bodies, World, Composite } = Matter;
 
 import { useMatchStore } from "~/stores/match";
@@ -158,10 +158,7 @@ onMounted(async () => {
         labels.includes("lose") &&
         labels.some((l) => fruitLabels.includes(l))
       ) {
-        //window.location.replace(`/lose?timeSurvived=${timeSurvived}`)
-        //note: uncomment this out later
-        //cant do the normal nuxt route page change because 
-        //this is in matter.events.on
+        emit('lose', formattedTime.value)
       } else if (pair.bodyA.label === pair.bodyB.label) {
         //merge fruit code
         const firstBodyToRemove = Matter.Composite.allBodies(engine.world).find(

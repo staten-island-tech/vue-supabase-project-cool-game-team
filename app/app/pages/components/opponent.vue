@@ -108,7 +108,6 @@ onMounted(() => {
         labels.includes("lose") &&
         labels.some((l) => fruitLabels.includes(l))
       ) {
-        //window.location.replace(`/lose?timeSurvived=${timeSurvived}`)
         //note: uncomment this out later
         //cant do the normal nuxt route page change because 
         //this is in matter.events.on
