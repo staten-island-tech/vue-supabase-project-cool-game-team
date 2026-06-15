@@ -1,7 +1,15 @@
 <template>
   <div class="min-h-screen bg-base-300 flex items-center justify-center p-6">
+    <div class="absolute top-4 right-4">
+      <button @click="goToLobby" class="btn btn-ghost btn-sm gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 12H5M12 5l-7 7 7 7"/>
+        </svg>
+        Back to Lobby
+      </button>
+    </div>
+
     <div class="card w-full max-w-sm bg-base-100 shadow-2xl border border-base-content/10 rounded-3xl overflow-hidden">
-      
       <!-- Top gradient banner -->
       <div class="h-24 bg-gradient-to-br from-primary via-secondary to-accent opacity-80" />
 
@@ -56,7 +64,7 @@ import { storeToRefs } from 'pinia'
 import { useMatchStore } from '~/stores/match'
 import { usePlayerStore } from '~/stores/player'
 
-definePageMeta({ middleware: 'auth' })
+definePageMeta({middleware: 'auth' })
 const supabase = useSupabaseClient()
 const user = useSupabaseUser()
 const username = ref('')
@@ -66,6 +74,9 @@ const match = useMatchStore();
 const { matches, inAMatch, currentMatchUUID, playerUsernames } = storeToRefs(match);
 const { uuid } = storeToRefs(player);
 // add remove uuid after log out
+function goToLobby() {
+  window.location.href = '/search'
+}
 /**
  * checks for changes in user var so wins doesn't get loaded before user is loaded
  */
