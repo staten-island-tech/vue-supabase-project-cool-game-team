@@ -138,6 +138,9 @@ async function fetchUsernames(players: Player): Promise<void> {
 async function createMatch(): Promise<void> {
   const { data, error } = await supabase.from('matches').insert({ players: { p1: playerStore.uuid } }).select("*").single();
   if (error || !data) return console.error(error)
+  if (!matches.value.find(m => m.uuid === data.uuid)) {
+    matches.value.push(data)
+  }
   currentMatchUUID.value = data.uuid
   inAMatch.value=true
   await fetchUsernames(data.players as unknown as Player)
