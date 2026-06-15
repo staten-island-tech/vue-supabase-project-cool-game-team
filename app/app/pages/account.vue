@@ -51,21 +51,29 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
+import { storeToRefs } from 'pinia'
+import { useMatchStore } from '~/stores/match'
+import { usePlayerStore } from '~/stores/player'
+
 definePageMeta({ middleware: 'auth' })
 const supabase = useSupabaseClient()
 const user = useSupabaseUser()
 const username = ref('')
 const wins = ref(0)
-
+const player = usePlayerStore();
+const match = useMatchStore();
+const { matches, inAMatch, currentMatchUUID, playerUsernames } = storeToRefs(match);
+const { uuid } = storeToRefs(player);
+// add remove uuid after log out
 /**
  * checks for changes in user var so wins doesn't get loaded before user is loaded
  */
 watch(user, async (newUser) => {
   if (newUser) {
-    username.value = newUser.email.split('@')[0]
-    const { data, error } = await supabase.from('profile').select('wins').eq('id', newUser.id).single()
-    if (data) wins.value = data.wins
+      username.value = newUser.email.split('@')[0]
+      const { data, error } = await supabase.from('profile').select('wins').eq('id', newUser.id).single()
+      if (data) wins.value = data.wins;
   }
 }, { immediate: true })
 
@@ -75,6 +83,13 @@ watch(user, async (newUser) => {
 async function logout() {
   const { error } = await supabase.auth.signOut()
   if (error === null) {
+
+    uuid.value = '';
+    matches.value = []
+    inAMatch.value= false
+    currentMatchUUID.value = ''
+    playerUsernames.value = []
+    
     await navigateTo({ path: '/' })
   }
 }
