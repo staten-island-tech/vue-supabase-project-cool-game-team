@@ -62,6 +62,10 @@ export type Database = {
     }
     Functions: {
       get_username: { Args: { user_id: string }; Returns: string }
+      leave_match: {
+        Args: { leaving_user: string; match_uuid: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
