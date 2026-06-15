@@ -75,7 +75,7 @@ const changes = supabase.channel('matches:players',{
             break
         }
         case 'DELETE': {
-            const index = matches.value.findIndex(match => match.uuid === payload.old.uuid)R
+            const index = matches.value.findIndex(match => match.uuid === payload.old.uuid)
             if (index !== -1) matches.value.splice(index, 1)
             if (currentMatchUUID.value === payload.old.uuid) {
                 inAMatch.value = false
