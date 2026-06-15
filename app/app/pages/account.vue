@@ -72,8 +72,12 @@ const { uuid } = storeToRefs(player);
 watch(user, async (newUser) => {
   if (newUser) {
       username.value = newUser.email.split('@')[0]
-      const { data, error } = await supabase.from('profile').select('wins').eq('id', newUser.id).single()
+      const { data, error } = await supabase.from('profile').select('wins').eq('id', newUser.sub).single()
       if (data) wins.value = data.wins;
+      console.log('data:', data)
+console.log('error:', error)
+console.log('user id:', newUser.id)
+      console.log(wins.value)
   }
 }, { immediate: true })
 
