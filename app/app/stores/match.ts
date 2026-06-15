@@ -14,9 +14,9 @@ export const useMatchStore = defineStore('matchStore', () => {
     const playerUsernames = reactive<string[]>([])
 
     const fruitTypes: Record<string, FruitType> = {
-    cherry:     { img: '/img/cherry.png',     radius: 120, selectionProbability: 1 },
-    strawberry: { img: '/img/strawberry.png', radius: 100, selectionProbability: 0 },
-    grape:      { img: '/img/grape.png',      radius: 80, selectionProbability: 0 },
+    cherry:     { img: '/img/cherry.png',     radius: 120, selectionProbability: 0.6 },
+    strawberry: { img: '/img/strawberry.png', radius: 100, selectionProbability: 0.2 },
+    grape:      { img: '/img/grape.png',      radius: 80, selectionProbability: 0.2 },
     citrus:     { img: '/img/citrus.png',     radius: 70, selectionProbability: 0 },
     apple:      { img: '/img/apple.png',      radius: 60,  selectionProbability: 0 },
     pear:       { img: '/img/pear.png',       radius: 50,  selectionProbability: 0 },

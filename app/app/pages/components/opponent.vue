@@ -4,6 +4,11 @@
     class="overflow-hidden relative"
   >
     <div
+  class="absolute top-2 z-20 left-2 bg-black/70 text-white px-3 py-1 rounded-md text-sm font-semibold"
+>
+  Opponent's Screen
+</div>
+    <div
       :style="{
         transform: `scale(${scale})`,
         transformOrigin: 'top left',

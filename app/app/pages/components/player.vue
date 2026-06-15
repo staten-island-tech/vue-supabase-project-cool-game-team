@@ -1,5 +1,10 @@
 <template>
   <div :style="{ width: scale * 800 + 'px', height: scale * 900 + 'px' }" class="overflow-hidden relative">
+     <div
+  class="absolute top-2 z-20 left-2 bg-black/70 text-white px-3 py-1 rounded-md text-sm font-semibold"
+>
+  Your Screen
+</div>
     <div
       :style="{ transform: `scale(${scale})`, transformOrigin: 'top left', position: 'absolute' }"
       ref="game"
@@ -186,6 +191,7 @@ onMounted(async () => {
       }
     });
   });
+  let lastSpawnTime = Date.now();
   Matter.Events.on(engine, "afterUpdate", () => {
   if (!currentFruit) return;
 
@@ -194,19 +200,49 @@ onMounted(async () => {
     vy: currentFruit.velocity.y
   });
 });
+  let spawnIntervalChange;
+
+spawnInterval = getCurrentSpawnInterval();
+
+spawnIntervalChange = setInterval(() => {
+  currentFruit = createFruit(380, 250, engine, selectRandomFruit()!);
+
+  const formattedCurrentFruit = {
+    id: currentFruit.id,
+    x: currentFruit.position.x,
+    y: currentFruit.position.y,
+    label: currentFruit.label
+  };
+
+  emit("gameData", {
+    formattedCurrentFruit,
+    timeSurvived: formattedTime.value
+  });
+console.log("spawn interval value:", getCurrentSpawnInterval());
+  // 🔥 restart interval with updated speed
+  clearInterval(spawnIntervalChange);
+
+  spawnInterval = getCurrentSpawnInterval();
+
   spawnIntervalChange = setInterval(() => {
-    //to do: fix this
-    spawnInterval = getCurrentSpawnInterval();
-    currentFruit = createFruit(380,250, engine, selectRandomFruit()!);
-    //(280,250) is a midpoint near top of screen
+    currentFruit = createFruit(380, 250, engine, selectRandomFruit()!);
+    const now = Date.now();
+console.log("spawn gap:", now - lastSpawnTime);
+lastSpawnTime = now;
     const formattedCurrentFruit = {
-        id: currentFruit.id,
-        x: currentFruit.position.x,
-        y: currentFruit.position.y,
-        label: currentFruit.label
-    }
-    emit("gameData", { formattedCurrentFruit, timeSurvived: formattedTime.value });
+      id: currentFruit.id,
+      x: currentFruit.position.x,
+      y: currentFruit.position.y,
+      label: currentFruit.label
+    };
+
+    emit("gameData", {
+      formattedCurrentFruit,
+      timeSurvived: formattedTime.value
+    });
   }, spawnInterval);
+
+}, spawnInterval);
     
 
   setInterval(() => {
