@@ -197,6 +197,7 @@ async function startMatch(){
 </script>
 
 <template>
+  <div class="absolute top-4 right-4 flex gap-2">
   <!-- Lobby view -->
   <div class="absolute top-4 right-4">
     <button @click="navigateTo('/account')" class="btn btn-ghost btn-sm gap-2">
@@ -207,6 +208,18 @@ async function startMatch(){
       Account
     </button>
   </div>
+  <div class="absolute top-4 left-4">
+  <button
+    @click="navigateTo({
+      path: '/player',
+      query: { mode: 'edit' }
+    })"
+    class="btn btn-ghost btn-sm gap-2"
+  >
+    Single Player
+  </button>
+</div>
+</div>
 
   <div v-if="!inAMatch" class="min-h-screen bg-base-300 flex flex-col items-center justify-center p-6 gap-6">
 

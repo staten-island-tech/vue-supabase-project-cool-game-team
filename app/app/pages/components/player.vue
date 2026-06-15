@@ -1,6 +1,6 @@
 <template>
   <div :style="{ width: scale * 800 + 'px', height: scale * 900 + 'px' }" class="overflow-hidden relative">
-     <div
+     <div v-if="mode=='multiplayer'"
   class="absolute top-2 z-20 left-2 bg-black/70 text-white px-3 py-1 rounded-md text-sm font-semibold"
 >
   Your Screen
@@ -26,6 +26,10 @@ import {createFruit} from "~/utils/physics"
 
 definePageMeta({ ssr: false, middleware: [] });
 const emit = defineEmits(["gameData", 'leftTab', "moveFruit", "lose"]);
+const props = defineProps<{
+  mode: string
+}>()
+const mode = props.mode
 const { Engine, Render, Runner, Bodies, World, Composite } = Matter;
 
 import { useMatchStore } from "~/stores/match";
