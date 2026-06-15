@@ -88,11 +88,11 @@ const changes = supabase.channel('matches:players',{
             const players = payload.new.players as object ?? {}
             console.log('UPDATE received, index:', index, 'players:', players)
             if (index !== -1) {
-                if (Object.keys(players).length >= 2 && payload.new.uuid !== currentMatchUUID.value) {
-                    matches.value.splice(index, 1)
-                } else {
-                    matches.value[index] = payload.new as Match
-                }
+              if (Object.keys(payload.new.players as object).length >= 2 && payload.new.uuid !== currentMatchUUID.value) {
+                  matches.value.splice(index, 1)
+              } else {
+                  matches.value[index] = payload.new as Match
+              }
             }
             
             console.log('AFTER update')
