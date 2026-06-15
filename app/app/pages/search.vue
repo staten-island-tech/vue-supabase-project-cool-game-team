@@ -113,10 +113,11 @@ async function fetchUsernames(players: Player): Promise<void> {
         .eq('id', uuid)
         .single()
       console.log('uuid:', uuid, 'data:', data, 'error:', error) 
-      return (data ?? 'Unknown') as string
+      return (data.username ?? 'Unknown') as string
     })
   )
   playerUsernames.value = results
+  console.log(playerUsernames.value)
 }
 
 /**
@@ -271,10 +272,10 @@ async function startMatch(){
           >
             <div class="avatar placeholder">
               <div class="bg-primary text-primary-content rounded-full w-8 flex items-center justify-center">
-                <span class="text-sm font-black">{{ username.username.charAt(0).toUpperCase() }}</span>
+                <span class="text-sm font-black">{{ username.charAt(0).toUpperCase() }}</span>
               </div>
             </div>
-            <span class="font-mono text-xs text-base-content/60">{{ username.username }}</span>
+            <span class="font-mono text-xs text-base-content/60">{{ username}}</span>
             <div v-if="index === 0" class="badge badge-warning badge-sm ml-auto">Host</div>
           </div>
           <!-- Empty slot -->
