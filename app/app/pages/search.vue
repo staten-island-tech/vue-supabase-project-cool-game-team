@@ -91,27 +91,8 @@ const changes = supabase.channel('matches:players',{
             await navigateTo(`/game/${currentMatchUUID.value}`)
           }       
           break
-          }
-
-        case 'UPDATE': {
-            const index = matches.value.findIndex(m => m.uuid === payload.new.uuid)
-            if (index !== -1) {
-            if (Object.keys(payload.new.players).length >= 2) {
-                matches.value.splice(index, 1)
-            } else {
-                matches.value[index] = payload.new as Match
-            }
-            }
-            if (inAMatch.value && payload.new.uuid === currentMatchUUID.value) {
-            await fetchUsernames(payload.new.players)
-            }
-            if (payload.new.uuid === currentMatchUUID.value && payload.new.started === true) {
-                await navigateTo(`/game/${currentMatchUUID.value}`)
-            }
-            break
         }
-    }
-}).subscribe((status) => {
+}}).subscribe((status) => {
     console.log(status)
 })
 onUnmounted(() => {supabase.removeChannel(changes)})
@@ -211,7 +192,6 @@ async function leaveMatch() {
  */
 async function startMatch(){
     const { error: updateError } = await supabase.from('matches').update({ started: true }).eq('uuid', currentMatchUUID.value)
-    if (!updateError) await navigateTo(`/game/${currentMatchUUID.value}`)
 }
 
 </script>
