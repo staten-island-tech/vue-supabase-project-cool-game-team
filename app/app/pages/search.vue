@@ -85,6 +85,7 @@ const changes = supabase.channel('matches:players',{
         }
         case 'UPDATE': {
             const index = matches.value.findIndex(m => m.uuid === payload.new.uuid)
+            console.log('UPDATE received, index in matches:', index, 'players:', payload.new.players)
             if (index !== -1) {
             if (Object.keys(payload.new.players).length >= 2) {
                 matches.value.splice(index, 1)
@@ -120,7 +121,7 @@ async function fetchUsernames(players: Player): Promise<void> {
       return (data ?? 'Unknown') as string
     })
   )
-  playerUsernames.value.push(...results)
+  playerUsernames.value = results
 }
 
 /**
