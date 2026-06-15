@@ -40,13 +40,17 @@ if(data){
         }
     })
 }
-// ill fix this later
-if(matches.value[0]){
-  if(Object.values(matches.value.players.p1 === playerStore.uuid)){
+matches.value.forEach((m) => {
+  const players = m.players as unknown as Player
+  if (players.p1 === playerStore.uuid || players.p2 === playerStore.uuid) {
+    currentMatchUUID.value = m.uuid
     inAMatch.value = true
-    const indexOfMatch = matches.value.findIndex()
   }
+})
+if (inAMatch.value && currentMatchData.value) {
+  await fetchUsernames(currentMatchData.value.players as unknown as Player)
 }
+
 await supabase.realtime.setAuth()
 
 /**
@@ -72,6 +76,7 @@ const changes = supabase.channel('matches:players',{
         }
         case 'DELETE':{
             const index = matches.value.findIndex(match => match.uuid === payload.old.uuid)
+            alert(index);
             if (index !== -1) matches.value.splice(index, 1)
             if (currentMatchUUID.value === payload.old.uuid) {
                 inAMatch.value = false
