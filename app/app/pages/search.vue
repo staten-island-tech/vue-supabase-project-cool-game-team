@@ -76,29 +76,20 @@ const changes = supabase.channel('matches:players',{
           break
         }
         case 'UPDATE': {
-          const updated = payload.new as Match
-          const index = matches.value.findIndex(m => m.uuid === updated.uuid)
-
-          const isCurrentMatch = updated.uuid === currentMatchUUID.value
-          const playerCount = Object.keys(updated.players as object).length
-
+          const index = matches.value.findIndex(m => m.uuid === payload.new.uuid)
           if (index !== -1) {
-            matches.value[index] = updated
+            if (Object.keys(payload.new.players as object).length >= 2 && payload.new.uuid !== currentMatchUUID.value) {
+              matches.value.splice(index, 1)
+            } else {
+              matches.value[index] = payload.new as Match
+            }
           }
-
-          if (index === -1 && playerCount < 2) {
-            matches.value.push(updated)
+          if (inAMatch.value && payload.new.uuid === currentMatchUUID.value) {
+            await fetchUsernames(payload.new.players as unknown as Player)
           }
-
-          if (isCurrentMatch) {
-            inAMatch.value = true
-            currentMatchUUID.value = updated.uuid
-          }
-
-          if (isCurrentMatch && updated.started === true) {
-            navigateTo(`/game/${updated.uuid}`)
-          }
-
+          if (payload.new.uuid === currentMatchUUID.value && payload.new.started === true) {
+            await navigateTo(`/game/${currentMatchUUID.value}`)
+          }       
           break
         }
 }}).subscribe((status) => {
@@ -125,8 +116,7 @@ async function fetchUsernames(players: Player): Promise<void> {
       return (data ?? 'Unknown') as string
     })
   )
-  playerUsernames.value.length = 0
-  playerUsernames.value.push(...results)
+  playerUsernames.value = results
 }
 
 /**
