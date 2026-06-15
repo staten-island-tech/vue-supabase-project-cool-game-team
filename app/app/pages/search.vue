@@ -112,9 +112,15 @@ onUnmounted(() => {supabase.removeChannel(changes)})
 async function fetchUsernames(players: Player): Promise<void> {
   playerUsernames.value.length = 0
   const uuids = Object.values(players).filter((uuid): uuid is string => uuid !== null)
+  console.log('fetching usernames for uuids:', uuids) 
   const results = await Promise.all(
     uuids.map(async (uuid) => {
-      const { data } = await supabase.rpc('get_username', { user_id: uuid })
+      const { data, error } = await supabase
+        .from('profile')
+        .select('username')
+        .eq('id', uuid)
+        .single()
+      console.log('uuid:', uuid, 'data:', data, 'error:', error) 
       return (data ?? 'Unknown') as string
     })
   )
@@ -252,10 +258,10 @@ async function startMatch(){
           >
             <div class="avatar placeholder">
               <div class="bg-primary text-primary-content rounded-full w-8">
-                <span class="text-sm font-black">{{ username?.charAt(0).toUpperCase() }}</span>
+                <span class="text-sm font-black">{{ username.username.charAt(0).toUpperCase() }}</span>
               </div>
             </div>
-            <span class="font-mono text-xs text-base-content/60">{{ username }}</span>
+            <span class="font-mono text-xs text-base-content/60">{{ username.username }}</span>
             <div v-if="index === 0" class="badge badge-warning badge-sm ml-auto">Host</div>
           </div>
           <!-- Empty slot -->
