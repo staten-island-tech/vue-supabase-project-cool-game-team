@@ -36,7 +36,7 @@ const { data, error } = await supabase.from('matches').select('*')
 matches.value.length = 0
 if(data){
     data.forEach((m) => {
-      if(Object.keys(m.players).length < 2){
+      if(Object.keys(m.players as object).length < 2){
           matches.value.push(m)
       }
       const players = m.players as unknown as Player
@@ -115,8 +115,7 @@ onUnmounted(() => {supabase.removeChannel(changes)})
  */
 async function fetchUsernames(players: Player): Promise<void> {
   playerUsernames.value.length = 0
-  const uuids = Object.values(players).filter((uuid): uuid is string => uuid !== null)
-  console.log('fetching usernames for uuids:', uuids) 
+  const uuids = Object.values(players as object).filter((uuid): uuid is string => uuid !== null)
   const results = await Promise.all(
     uuids.map(async (uuid) => {
       const { data, error } = await supabase
@@ -128,7 +127,7 @@ async function fetchUsernames(players: Player): Promise<void> {
       return (data ?? 'Unknown') as string
     })
   )
-  playerUsernames.value.push(...results)
+  playerUsernames.value = results
 }
 
 /**
@@ -163,9 +162,9 @@ async function joinMatch(uuid: string) {
     const { data, error } = await supabase.from('matches').select('players').eq('uuid', uuid).single()
     if (!data || error) return console.error(error)
 
-    if (Object.keys(data.players).length >= 2) return console.error('too many')
+    if (Object.keys(data.players as object).length >= 2) return console.error('too many')
 
-    const updatedPlayers = { ...data.players, p2: user.value?.sub }
+    const updatedPlayers = { ...data.players as object, p2: user.value?.sub }
 
     const { error: updateError } = await supabase.from('matches').update({ players: updatedPlayers }).eq('uuid', uuid)
     if (updateError) return console.error(updateError)
@@ -184,14 +183,14 @@ async function joinMatch(uuid: string) {
 async function leaveMatch() {
   if (isProcessing.value) return
   isProcessing.value = true
+
   try {
-    if (currentMatchData.value?.players?.p1 === playerStore.uuid) {
-      const { error } = await supabase.from('matches').delete().eq('uuid', currentMatchUUID.value)
-      if (error) return console.error(error)
-    } else {
-      const { error } = await supabase.from('matches').update({ players: { p1: currentMatchData.value?.players.p1 } }).eq('uuid', currentMatchUUID.value)
-      if (error) return console.error(error)
-    }
+    const { error } = await supabase.rpc('leave_match', {
+      match_uuid: currentMatchUUID.value,
+      leaving_user: playerStore.uuid
+    })
+    if (error) return console.error(error)
+
     inAMatch.value = false
     currentMatchUUID.value = ''
   } finally {
