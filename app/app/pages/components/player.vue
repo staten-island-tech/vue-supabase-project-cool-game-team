@@ -72,10 +72,10 @@ async function preloadAllFruits() {
 }
 selectRandomFruit();
 
-const spawnStartInterval = 2000; // ms
-const spawnMinInterval = 500; // ms
-const speedStepInterval = 10000; // decrease every 10s
-const spawnDecreaseAmount = 100; // ms reduction per step
+const spawnStartInterval = 1200;
+const spawnMinInterval = 300;
+const speedStepInterval = 8000;
+const spawnDecreaseAmount = 40;
 let handleKeyDown: ((e: KeyboardEvent) => void) | null = null
 let spawnInterval = spawnStartInterval;
 let timeSurvived = 0;
@@ -101,9 +101,14 @@ function formatTime(ms: number): string {
   return result.trim();
 }
 
+const gameStartTime = Date.now();
+
 function getCurrentSpawnInterval(): number {
+  const timeSurvived = Date.now() - gameStartTime;
+
   const steps = Math.floor(timeSurvived / speedStepInterval);
   const reduced = spawnStartInterval - steps * spawnDecreaseAmount;
+
   return Math.max(reduced, spawnMinInterval);
 }
 
@@ -219,7 +224,6 @@ spawnIntervalChange = setInterval(() => {
     timeSurvived: formattedTime.value
   });
 console.log("spawn interval value:", getCurrentSpawnInterval());
-  // 🔥 restart interval with updated speed
   clearInterval(spawnIntervalChange);
 
   spawnInterval = getCurrentSpawnInterval();
