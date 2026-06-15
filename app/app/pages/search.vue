@@ -74,14 +74,14 @@ const changes = supabase.channel('matches:players',{
             if(Object.keys(payload.new.players).length < 2) matches.value.push(payload.new as Match)
             break
         }
-        case 'DELETE':{
+        case 'DELETE': {
+            console.log('old data:', payload.old)
             const index = matches.value.findIndex(match => match.uuid === payload.old.uuid)
-            console.log(index)
+            console.log('index', index)
             if (index !== -1) matches.value.splice(index, 1)
             if (currentMatchUUID.value === payload.old.uuid) {
                 inAMatch.value = false
                 currentMatchUUID.value = ''
-                
             }
             break
         }
@@ -163,19 +163,16 @@ async function joinMatch(uuid: string) {
  * Leaves a match by deleting if host leaves or updates match to remove p2 in Players
  */
 async function leaveMatch() {
-  if (currentMatchData.value?.players?.p1 === playerStore.uuid) {
-    const { error } = await supabase.from('matches').delete().eq('uuid', currentMatchUUID.value)
-    if (error) return console.error(error)
-    inAMatch.value = false
-    currentMatchUUID.value = ''
+  const { error } = await supabase.rpc('leave_match', {
+    match_uuid: currentMatchUUID.value,
+    leaving_user: playerStore.uuid
+  })
+  if (error) return console.error(error)
 
-  } else {
-    const { error: updateError } = await supabase.from('matches').update({ players: { p1: currentMatchData.value?.players.p1 } }).eq('uuid', currentMatchUUID.value)
-    if (updateError) return console.error(updateError)
-    inAMatch.value = false
-    currentMatchUUID.value = ''
-  }
+  inAMatch.value = false
+  currentMatchUUID.value = ''
 }
+
 
 /**
  * Starts a match by redirecting to game page and passing in match uuid as param
