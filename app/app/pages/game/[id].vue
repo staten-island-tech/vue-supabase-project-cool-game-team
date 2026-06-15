@@ -11,6 +11,7 @@ import { ref, onMounted, onBeforeUnmount } from "vue"
 import player from '../components/player.vue'
 import opponent from '../components/opponent.vue'
 import type {MoveFruit} from "~/utils/types"
+import { storeToRefs } from 'pinia'
 
 import { useMatchStore } from "~/stores/match";
 const matchStore = useMatchStore();
@@ -37,12 +38,25 @@ onMounted(() => {
   socket.on('opponent-move-fruit', (data: MoveFruit) => {    
     opponentMoveFruit.value = data
   })
-  socket.on('opponent-lost', (timeSurvived: string) => {
+  socket.on('opponent-lost', async(timeSurvived: string) => {
+    const match = useMatchStore();
+    const { matches, inAMatch, currentMatchUUID, playerUsernames } = storeToRefs(match);
+    matches.value = []
+    inAMatch.value= false
+    currentMatchUUID.value = ''
+    playerUsernames.value = []
+    await useSupabaseClient().rpc('increment_wins')
     window.location.replace(`/win?timeSurvived=${timeSurvived}`)
   })
 })
 function handleLose(timeSurvived: string) {
-  socket.emit('player-lost', roomId, timeSurvived) 
+  socket.emit('player-lost', roomId, timeSurvived)
+  const match = useMatchStore();
+  const { matches, inAMatch, currentMatchUUID, playerUsernames } = storeToRefs(match);
+  matches.value = []
+  inAMatch.value= false
+  currentMatchUUID.value = ''
+  playerUsernames.value = []
   window.location.replace(`/lose?timeSurvived=${timeSurvived}`)
 }
 
