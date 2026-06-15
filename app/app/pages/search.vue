@@ -12,6 +12,7 @@ const supabase = useSupabaseClient<Database>()
 const user = useSupabaseUser()
 const playerStore = usePlayerStore()
 const matchStore = useMatchStore()
+const isJoining = ref(false)
 const {  matches, inAMatch, currentMatchData, playerUsernames, isMatchFull, isUserHost, currentMatchUUID } = storeToRefs(matchStore)
 
 if (user.value?.sub) {
@@ -31,6 +32,7 @@ type Player = Match['players']
 
 
 const { data, error } = await supabase.from('matches').select('*')
+matches.value.length = 0
 if(data){
     data.forEach((m) => {
       if(Object.keys(m.players).length < 2){
@@ -141,6 +143,8 @@ async function createMatch(): Promise<void> {
  * @param uuid uuid of a player joining
  */
 async function joinMatch(uuid: string) {
+  if(isJoining.value) return
+  isJoining.value = true
   const { data, error } = await supabase.from('matches').select('players').eq('uuid', uuid).single()
 
   if (!data || error) return console.error(error)
