@@ -2,6 +2,7 @@
 /**
  * @fileoverview - Match page where users can create or join matches, see who is in the match, and start the game when ready
  */
+
 //definePageMeta({middleware: 'auth'})
 import { reactive, computed } from 'vue'
 import type { Database } from '../../database.types'
@@ -35,7 +36,7 @@ const { data, error } = await supabase.from('matches').select('*')
 matches.value.length = 0
 if(data){
     data.forEach((m) => {
-      if(Object.keys(m.players as object).length < 2){
+      if(Object.keys(m.players as object).length < 2 && Object.keys(m.players as object).length != 0){
           matches.value.push(m)
       }
       const players = m.players as unknown as Player
@@ -74,35 +75,24 @@ const changes = supabase.channel('matches:players',{
           }
           break
         }
-        case 'DELETE':{
-            const index = matches.value.findIndex(match => match.uuid === payload.old.uuid)
-            if (index !== -1) matches.value.splice(index, 1)
-            if (currentMatchUUID.value === payload.old.uuid) {
-                inAMatch.value = false
-                currentMatchUUID.value = ''
-                
-            }
-            break
-        }
         case 'UPDATE': {
-            const index = matches.value.findIndex(m => m.uuid === payload.new.uuid)
-            if (index !== -1) {
-            if (Object.keys(payload.new.players).length >= 2) {
-                matches.value.splice(index, 1)
+          const index = matches.value.findIndex(m => m.uuid === payload.new.uuid)
+          if (index !== -1) {
+            if (Object.keys(payload.new.players as object).length >= 2 && payload.new.uuid !== currentMatchUUID.value) {
+              matches.value.splice(index, 1)
             } else {
-                matches.value[index] = payload.new as Match
+              matches.value[index] = payload.new as Match
             }
-            }
-            if (inAMatch.value && payload.new.uuid === currentMatchUUID.value) {
-            await fetchUsernames(payload.new.players)
-            }
-            if (payload.new.uuid === currentMatchUUID.value && payload.new.started === true) {
-                await navigateTo(`/game/${currentMatchUUID.value}`)
-            }
-            break
+          }
+          if (inAMatch.value && payload.new.uuid === currentMatchUUID.value) {
+            await fetchUsernames(payload.new.players as unknown as Player)
+          }
+          if (payload.new.uuid === currentMatchUUID.value && payload.new.started === true) {
+            await navigateTo(`/game/${currentMatchUUID.value}`)
+          }       
+          break
         }
-    }
-}).subscribe((status) => {
+}}).subscribe((status) => {
     console.log(status)
 })
 onUnmounted(() => {supabase.removeChannel(changes)})
@@ -113,16 +103,21 @@ onUnmounted(() => {supabase.removeChannel(changes)})
  * @param players Player Object e.g. {p1: 'uuid1', p2: 'uuid2'}
  */
 async function fetchUsernames(players: Player): Promise<void> {
-  playerUsernames.value.length = 0
   const uuids = Object.values(players as object).filter((uuid): uuid is string => uuid !== null)
   const results = await Promise.all(
     uuids.map(async (uuid) => {
-      const { data } = await supabase.rpc('get_username', { user_id: uuid })
-      return (data ?? 'Unknown') as string
+      const { data, error } = await supabase
+        .from('profile')
+        .select('username')
+        .eq('id', uuid)
+        .single()
+      console.log('uuid:', uuid, 'data:', data, 'error:', error)
+      return data?.username ?? 'Unknown'
     })
   )
   playerUsernames.value = results
 }
+
 
 /**
  * Creates a new match with the current user as the host and adds it to the matches array
@@ -197,13 +192,22 @@ async function leaveMatch() {
  */
 async function startMatch(){
     const { error: updateError } = await supabase.from('matches').update({ started: true }).eq('uuid', currentMatchUUID.value)
-    if (!updateError) await navigateTo(`/game/${currentMatchUUID.value}`)
 }
 
 </script>
 
 <template>
   <!-- Lobby view -->
+  <div class="absolute top-4 right-4">
+    <button @click="navigateTo('/account')" class="btn btn-ghost btn-sm gap-2">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
+      </svg>
+      Account
+    </button>
+  </div>
+
   <div v-if="!inAMatch" class="min-h-screen bg-base-300 flex flex-col items-center justify-center p-6 gap-6">
 
     <h1 class="text-4xl font-black text-base-content tracking-tight">Game Lobby</h1>
@@ -266,13 +270,14 @@ async function startMatch(){
             class="flex items-center gap-3 bg-base-200 rounded-xl px-4 py-3"
           >
             <div class="avatar placeholder">
-              <div class="bg-primary text-primary-content rounded-full w-8">
-                <span class="text-sm font-black">{{ username?.charAt(0).toUpperCase() }}</span>
+              <div class="bg-primary text-primary-content rounded-full w-8 flex items-center justify-center">
+                <span class="text-sm font-black">{{ username.charAt(0).toUpperCase() }}</span>
               </div>
             </div>
             <span class="font-mono text-xs text-base-content/60">{{ username }}</span>
             <div v-if="index === 0" class="badge badge-warning badge-sm ml-auto">Host</div>
           </div>
+
           <!-- Empty slot -->
           <div v-if="Object.keys(currentMatchData?.players || {}).length < 2" class="flex items-center gap-3 bg-base-200/50 rounded-xl px-4 py-3 border border-dashed border-base-content/20">
             <div class="avatar placeholder">

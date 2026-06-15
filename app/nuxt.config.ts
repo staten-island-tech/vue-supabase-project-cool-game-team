@@ -3,6 +3,7 @@ export default defineNuxtConfig({
   ssr:false,
   vite: {
     plugins: [tailwindcss() as any],
+    
   },
   css: ['~/assets/css/main.css'],
   compatibilityDate: '2025-07-15',
@@ -10,8 +11,27 @@ export default defineNuxtConfig({
   pages: true,
   modules: [
     '@nuxtjs/supabase',
-    '@nuxt/eslint',
+    '@nuxt/eslint'
   ],
+  nitro: {
+    experimental: {
+      websocket: true
+    }
+  },runtimeConfig: {
+    public: {
+      socketUrl: process.env.NUXT_SOCKET_URL
+    }
+  },
+  debug:true,
+  hooks: {
+  'pages:extend'(pages) {
+    pages.forEach(page => {
+      page.path = page.path
+        .replace('/auth', '')
+        .replace('/components', '')
+    })
+  }
+},
   supabase: {
     url: process.env.SUPABASE_URL,
     key: process.env.SUPABASE_PUBLISHABLE_KEY,

@@ -17,8 +17,7 @@
         </div>
 
         <p class="text-base-content/70 mt-2 max-w-md">
-          Merge fruits, compete with friends, and create the biggest watermelon
-          possible.
+          Merge fruits, compete with friends, and last as long as you can.
         </p>
 
         <div class="mt-6">
