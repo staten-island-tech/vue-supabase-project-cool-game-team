@@ -196,7 +196,6 @@ async function startMatch(){
           @click="joinMatch(match.uuid)"
           class="card bg-base-100 shadow-md border border-base-content/10 hover:border-primary hover:shadow-lg transition-all cursor-pointer"
         >
-        <div v-if="Object.keys(match.players).length != 0">
           <div class="card-body flex-row items-center justify-between py-4 px-6">
             <div>
               <p class="text-xs text-base-content/40 font-mono">{{ match.uuid }}</p>
@@ -212,7 +211,6 @@ async function startMatch(){
             </div>
           </div>
         </div>
-      </div>
       </template>
       <div v-else class="card bg-base-100 border border-base-content/10 shadow-md">
         <div class="card-body items-center text-center py-12">
