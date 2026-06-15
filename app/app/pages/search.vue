@@ -36,7 +36,7 @@ const { data, error } = await supabase.from('matches').select('*')
 matches.value.length = 0
 if(data){
     data.forEach((m) => {
-      if(Object.keys(m.players as object).length < 2){
+      if(Object.keys(m.players as object).length < 2 && Object.keys(m.players as object).length != 0){
           matches.value.push(m)
       }
       const players = m.players as unknown as Player
@@ -75,16 +75,24 @@ const changes = supabase.channel('matches:players',{
           }
           break
         }
-        case 'DELETE':{
-            const index = matches.value.findIndex(match => match.uuid === payload.old.uuid)
-            if (index !== -1) matches.value.splice(index, 1)
-            if (currentMatchUUID.value === payload.old.uuid) {
-                inAMatch.value = false
-                currentMatchUUID.value = ''
-                
+        case 'UPDATE': {
+          const index = matches.value.findIndex(m => m.uuid === payload.new.uuid)
+          if (index !== -1) {
+            if (Object.keys(payload.new.players as object).length >= 2 && payload.new.uuid !== currentMatchUUID.value) {
+              matches.value.splice(index, 1)
+            } else {
+              matches.value[index] = payload.new as Match
             }
-            break
-        }
+          }
+          if (inAMatch.value && payload.new.uuid === currentMatchUUID.value) {
+            await fetchUsernames(payload.new.players as unknown as Player)
+          }
+          if (payload.new.uuid === currentMatchUUID.value && payload.new.started === true) {
+            await navigateTo(`/game/${currentMatchUUID.value}`)
+          }       
+          break
+          }
+
         case 'UPDATE': {
             const index = matches.value.findIndex(m => m.uuid === payload.new.uuid)
             if (index !== -1) {
