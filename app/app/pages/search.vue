@@ -116,7 +116,8 @@ async function fetchUsernames(players: Player): Promise<void> {
       return (data ?? 'Unknown') as string
     })
   )
-  playerUsernames.value = results
+  playerUsernames.value.length = 0
+  playerUsernames.value.push(...results)
 }
 
 /**
