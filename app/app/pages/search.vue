@@ -261,7 +261,7 @@ async function startMatch(){
             class="flex items-center gap-3 bg-base-200 rounded-xl px-4 py-3"
           >
             <div class="avatar placeholder">
-              <div class="bg-primary text-primary-content rounded-full w-8">
+              <div class="bg-primary text-primary-content rounded-full w-8 flex items-center justify-center">
                 <span class="text-sm font-black">{{ username.username.charAt(0).toUpperCase() }}</span>
               </div>
             </div>
