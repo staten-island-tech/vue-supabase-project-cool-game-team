@@ -12,7 +12,7 @@ const supabase = useSupabaseClient<Database>()
 const user = useSupabaseUser()
 const playerStore = usePlayerStore()
 const matchStore = useMatchStore()
-const isJoining = ref(false)
+const isProcessing = ref(false)
 const {  matches, inAMatch, currentMatchData, playerUsernames, isMatchFull, isUserHost, currentMatchUUID } = storeToRefs(matchStore)
 
 if (user.value?.sub) {
@@ -68,9 +68,11 @@ const changes = supabase.channel('matches:players',{
     table: 'matches'
 }, async(payload) => {
     switch(payload.eventType){
-        case 'INSERT':{
-            if(Object.keys(payload.new.players).length < 2) matches.value.push(payload.new as Match)
-            break
+        case 'INSERT': {
+          if (Object.keys(payload.new.players).length < 2 && !matches.value.find(m => m.uuid === payload.new.uuid)) {
+            matches.value.push(payload.new as Match)
+          }
+          break
         }
         case 'DELETE':{
             const index = matches.value.findIndex(match => match.uuid === payload.old.uuid)
@@ -126,16 +128,21 @@ async function fetchUsernames(players: Player): Promise<void> {
  * Creates a new match with the current user as the host and adds it to the matches array
  */
 async function createMatch(): Promise<void> {
-  const { data, error } = await supabase.from('matches').insert({ players: { p1: playerStore.uuid } }).select("*").single();
-  if (error || !data) return console.error(error)
-  if (!matches.value.find(m => m.uuid === data.uuid)) {
-    matches.value.push(data)
-  }
-  currentMatchUUID.value = data.uuid
-  inAMatch.value=true
-  await fetchUsernames(data.players as unknown as Player)
+  if (isProcessing.value) return
+  isProcessing.value = true
+  try {
+    const { data, error } = await supabase.from('matches').insert({ players: { p1: user.value?.sub } }).select('*').single()
+    if (error || !data) return console.error(error)
 
-  
+    if (!matches.value.find(m => m.uuid === data.uuid)) {
+      matches.value.push(data)
+    }
+    currentMatchUUID.value = data.uuid
+    inAMatch.value = true
+    await fetchUsernames(data.players as unknown as Player)
+  } finally {
+    isProcessing.value = false
+  }
 }
 
 /**
@@ -143,40 +150,45 @@ async function createMatch(): Promise<void> {
  * @param uuid uuid of a player joining
  */
 async function joinMatch(uuid: string) {
-  if(isJoining.value) return
-  isJoining.value = true
-  const { data, error } = await supabase.from('matches').select('players').eq('uuid', uuid).single()
+  if (isProcessing.value) return
+  isProcessing.value = true
+  try {
+    const { data, error } = await supabase.from('matches').select('players').eq('uuid', uuid).single()
+    if (!data || error) return console.error(error)
 
-  if (!data || error) return console.error(error)
+    if (Object.keys(data.players).length >= 2) return console.error('too many')
 
-  const playerCount = Object.keys(data.players).length
-  if (playerCount >= 2) return console.error('too many')
+    const updatedPlayers = { ...data.players, p2: user.value?.sub }
 
-  const updatedPlayers = { ...data.players, p2: user.value?.sub }
+    const { error: updateError } = await supabase.from('matches').update({ players: updatedPlayers }).eq('uuid', uuid)
+    if (updateError) return console.error(updateError)
 
-  const { error: updateError } = await supabase.from('matches').update({ players: updatedPlayers }).eq('uuid', uuid)
-  currentMatchUUID.value = uuid
-  inAMatch.value=true
-  await fetchUsernames(updatedPlayers as unknown as Player)
-
-
+    currentMatchUUID.value = uuid
+    inAMatch.value = true
+    await fetchUsernames(updatedPlayers as unknown as Player)
+  } finally {
+    isProcessing.value = false
+  }
 }
 
 /**
  * Leaves a match by deleting if host leaves or updates match to remove p2 in Players
  */
 async function leaveMatch() {
-  if (currentMatchData.value?.players?.p1 === playerStore.uuid) {
-    const { error } = await supabase.from('matches').delete().eq('uuid', currentMatchUUID.value)
-    if (error) return console.error(error)
+  if (isProcessing.value) return
+  isProcessing.value = true
+  try {
+    if (currentMatchData.value?.players?.p1 === playerStore.uuid) {
+      const { error } = await supabase.from('matches').delete().eq('uuid', currentMatchUUID.value)
+      if (error) return console.error(error)
+    } else {
+      const { error } = await supabase.from('matches').update({ players: { p1: currentMatchData.value?.players.p1 } }).eq('uuid', currentMatchUUID.value)
+      if (error) return console.error(error)
+    }
     inAMatch.value = false
     currentMatchUUID.value = ''
-
-  } else {
-    const { error: updateError } = await supabase.from('matches').update({ players: { p1: currentMatchData.value?.players.p1 } }).eq('uuid', currentMatchUUID.value)
-    if (updateError) return console.error(updateError)
-    inAMatch.value = false
-    currentMatchUUID.value = ''
+  } finally {
+    isProcessing.value = false
   }
 }
 
@@ -201,7 +213,7 @@ async function startMatch(){
         <div
           v-for="match in matches"
           :key="match.uuid"
-          @click="joinMatch(match.uuid)"
+          @click="!isProcessing && joinMatch(match.uuid)"
           class="card bg-base-100 shadow-md border border-base-content/10 hover:border-primary hover:shadow-lg transition-all cursor-pointer"
         >
           <div class="card-body flex-row items-center justify-between py-4 px-6">
@@ -228,7 +240,7 @@ async function startMatch(){
       </div>
     </div>
 
-    <button @click="createMatch" class="btn btn-primary btn-wide gap-2 rounded-xl shadow-lg">
+    <button @click="createMatch" :disabled="isProcessing" class="btn btn-primary btn-wide gap-2 rounded-xl shadow-lg">
       <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <path d="M12 5v14M5 12h14"/>
       </svg>
@@ -276,7 +288,7 @@ async function startMatch(){
 
     <!-- Host controls -->
     <div v-if="isUserHost" class="w-full max-w-sm">
-      <button v-if="isMatchFull" @click="startMatch" class="btn btn-success btn-block rounded-xl gap-2 shadow-lg">
+      <button v-if="isMatchFull" @click="startMatch" :disabled="isProcessing" class="btn btn-success btn-block rounded-xl gap-2 shadow-lg">
         <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
           <path d="M8 5v14l11-7z"/>
         </svg>
@@ -291,7 +303,7 @@ async function startMatch(){
       <span>Waiting for the host to start the game...</span>
     </div>
     <!-- Leave button -->
-        <button @click="leaveMatch" class="btn btn-outline btn-error w-full max-w-sm rounded-xl gap-2">
+        <button @click="leaveMatch" :disabled="isProcessing" class="btn btn-outline btn-error w-full max-w-sm rounded-xl gap-2">
         <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
         </svg>
