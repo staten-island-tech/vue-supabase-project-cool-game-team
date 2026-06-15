@@ -87,11 +87,14 @@ const changes = supabase.channel('matches:players',{
             const index = matches.value.findIndex(m => m.uuid === payload.new.uuid)
             console.log('UPDATE received, index in matches:', index, 'players:', payload.new.players)
             if (index !== -1) {
-            if (Object.keys(payload.new.players).length >= 2) {
-                matches.value.splice(index, 1)
-            } else {
-                matches.value[index] = payload.new as Match
-            }
+              try {
+                  if (Object.keys(payload.new.players as object ?? {}).length >= 2) {
+                      matches.value.splice(index, 1)
+                  } else {
+                      matches.value[index] = payload.new as Match
+                  }
+              } catch (e) {
+                  console.error('ERROR checking players:', e, payload.new.players)
             }
             console.log(JSON.stringify(currentMatchData.value))
             console.log(isMatchFull.value)
@@ -107,7 +110,7 @@ const changes = supabase.channel('matches:players',{
             break
         }
     }
-}).subscribe((status) => {
+}}).subscribe((status) => {
     console.log(status)
 })
 onUnmounted(() => {supabase.removeChannel(changes)})
