@@ -101,6 +101,7 @@ const changes = supabase.channel('matches:players',{
             console.log(isUserHost.value)
             console.log(playerStore.uuid)
             console.log(currentMatchData.value?.players?.p1)
+            console.log('hi')
             if (inAMatch.value && payload.new.uuid === currentMatchUUID.value) {
             await fetchUsernames(payload.new.players)
             }
