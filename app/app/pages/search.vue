@@ -85,32 +85,29 @@ const changes = supabase.channel('matches:players',{
         }
         case 'UPDATE': {
             const index = matches.value.findIndex(m => m.uuid === payload.new.uuid)
-            console.log('UPDATE received, index in matches:', index, 'players:', payload.new.players)
+            const players = payload.new.players as object ?? {}
+            console.log('UPDATE received, index:', index, 'players:', players)
             if (index !== -1) {
-              try {
-                  if (Object.keys(payload.new.players as object ?? {}).length >= 2) {
-                      matches.value.splice(index, 1)
-                  } else {
-                      matches.value[index] = payload.new as Match
-                  }
-              } catch (e) {
-                  console.error('ERROR checking players:', e, payload.new.players)
+                if (Object.keys(players).length >= 2 && payload.new.uuid !== currentMatchUUID.value) {
+                    matches.value.splice(index, 1)
+                } else {
+                    matches.value[index] = payload.new as Match
+                }
             }
-            console.log(JSON.stringify(currentMatchData.value))
-            console.log(isMatchFull.value)
-            console.log(isUserHost.value)
-            console.log(playerStore.uuid)
-            console.log(currentMatchData.value?.players?.p1)
-            console.log('hi')
+            
+            console.log('AFTER update')
+            console.log('currentMatchData:', JSON.stringify(currentMatchData.value))
+            console.log('isMatchFull:', isMatchFull.value)
+            console.log('isUserHost:', isUserHost.value)
+            
             if (inAMatch.value && payload.new.uuid === currentMatchUUID.value) {
-            await fetchUsernames(payload.new.players)
+                await fetchUsernames(players as unknown as Player)
             }
             if (payload.new.uuid === currentMatchUUID.value && payload.new.started === true) {
                 await navigateTo(`/game/${currentMatchUUID.value}`)
             }
             break
         }
-    }
 }}).subscribe((status) => {
     console.log(status)
 })
