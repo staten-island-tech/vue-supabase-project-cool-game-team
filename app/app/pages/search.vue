@@ -114,7 +114,6 @@ onUnmounted(() => {supabase.removeChannel(changes)})
  * @param players Player Object e.g. {p1: 'uuid1', p2: 'uuid2'}
  */
 async function fetchUsernames(players: Player): Promise<void> {
-  playerUsernames.value.length = 0
   const uuids = Object.values(players).filter((uuid): uuid is string => uuid !== null)
   const results = await Promise.all(
     uuids.map(async (uuid) => {
@@ -122,7 +121,7 @@ async function fetchUsernames(players: Player): Promise<void> {
       return (data ?? 'Unknown') as string
     })
   )
-  playerUsernames.value = results
+  playerUsernames.value.splice(0, playerUsernames.value.length, ...results)
 }
 
 /**
