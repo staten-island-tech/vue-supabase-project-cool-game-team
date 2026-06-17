@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import type { Database } from '../../database.types'
+import type { Database } from '../types/database.types'
 import { usePlayerStore } from './player'
 import type { FruitType } from "../utils/types";
 
@@ -29,8 +29,8 @@ export const useMatchStore = defineStore('matchStore', () => {
         window.innerWidth / 2 / 800,   
         window.innerHeight / 900
     )
+    const currentMatchData = computed(() => matches.find(m => m.uuid === currentMatchUUID.value))
     const isMatchFull = computed<boolean>(() => !!currentMatchData.value && Object.keys(currentMatchData.value.players as object as Record<string, string>).length >= 2)
     const isUserHost = computed(() => currentMatchData.value?.players?.p1 === playerStore.uuid)
-    const currentMatchData = computed(() => matches.find(m => m.uuid === currentMatchUUID.value))
     return { scale, fruitTypes, matches, inAMatch, currentMatchData, playerUsernames, isMatchFull, isUserHost, currentMatchUUID}
 }, {persist: true})

@@ -2,10 +2,9 @@
 /**
  * @fileoverview - Match page where users can create or join matches, see who is in the match, and start the game when ready
  */
-
-//definePageMeta({middleware: 'auth'})
+definePageMeta({middleware: 'auth'})
 import { reactive, computed } from 'vue'
-import type { Database } from '../../database.types'
+import type { Database } from '../types/database.types'
 import { usePlayerStore } from '~/stores/player'
 import { useMatchStore } from '~/stores/match'
 import { storeToRefs } from 'pinia'
@@ -13,15 +12,16 @@ const supabase = useSupabaseClient<Database>()
 const user = useSupabaseUser()
 const playerStore = usePlayerStore()
 const matchStore = useMatchStore()
-const isProcessing = ref(false)
 const {  matches, inAMatch, currentMatchData, playerUsernames, isMatchFull, isUserHost, currentMatchUUID } = storeToRefs(matchStore)
+matches.value.length = 0
 
-if (user.value?.sub) {
-  playerStore.uuid = user.value.sub
+const { data: { session }} = await supabase.auth.getSession()
+if (session?.user) {
+  playerStore.uuid = session.user.id;
 }
 
 if(inAMatch.value === false){
-  playerUsernames.value = []  
+  playerUsernames.value = []
 }
 
 
@@ -33,23 +33,25 @@ type Player = Match['players']
 
 
 const { data, error } = await supabase.from('matches').select('*')
-matches.value.length = 0
 if(data){
     data.forEach((m) => {
-      if(Object.keys(m.players as object).length < 2 && Object.keys(m.players as object).length != 0){
-          matches.value.push(m)
-      }
-      const players = m.players as unknown as Player
-      if (players.p1 === playerStore.uuid || players.p2 === playerStore.uuid) {
-        currentMatchUUID.value = m.uuid
-        inAMatch.value = true
+      const isUserinMatch = m.players.p1 === playerStore.uuid || m.players.p2 === playerStore.uuid
+      if (Object.keys(m.players).length < 2 || isUserinMatch) {
+        matches.value.push(m)
       }
     })
 }
- 
+matches.value.forEach((m) => {
+  const players = m.players as unknown as Player
+  if (players.p1 === playerStore.uuid || players.p2 === playerStore.uuid) {
+    currentMatchUUID.value = m.uuid
+    inAMatch.value = true
+  }
+})
 if (inAMatch.value && currentMatchData.value) {
   await fetchUsernames(currentMatchData.value.players as unknown as Player)
 }
+
 await supabase.realtime.setAuth()
 
 /**
@@ -70,27 +72,36 @@ const changes = supabase.channel('matches:players',{
 }, async(payload) => {
     switch(payload.eventType){
         case 'INSERT': {
-          if (Object.keys(payload.new.players).length < 2 && !matches.value.find(m => m.uuid === payload.new.uuid)) {
+          if (!matches.value.some(m => m.uuid === payload.new.uuid) && Object.keys(payload.new.players as object).length < 2) {
             matches.value.push(payload.new as Match)
           }
           break
         }
-        case 'UPDATE': {
-          const index = matches.value.findIndex(m => m.uuid === payload.new.uuid)
-          if (index !== -1) {
-            if (Object.keys(payload.new.players as object).length >= 2 && payload.new.uuid !== currentMatchUUID.value) {
-              matches.value.splice(index, 1)
-            } else {
-              matches.value[index] = payload.new as Match
+        case 'DELETE': {
+            const index = matches.value.findIndex(match => match.uuid === payload.old.uuid)
+            if (index !== -1) matches.value.splice(index, 1)
+            if (currentMatchUUID.value === payload.old.uuid) {
+                inAMatch.value = false
+                currentMatchUUID.value = ''
             }
-          }
-          if (inAMatch.value && payload.new.uuid === currentMatchUUID.value) {
-            await fetchUsernames(payload.new.players as unknown as Player)
-          }
-          if (payload.new.uuid === currentMatchUUID.value && payload.new.started === true) {
-            await navigateTo(`/game/${currentMatchUUID.value}`)
-          }       
-          break
+            break
+        }
+        case 'UPDATE': {
+            const index = matches.value.findIndex(m => m.uuid === payload.new.uuid)
+            if (index !== -1) {
+              if (Object.keys(payload.new.players as object).length >= 2 && payload.new.uuid !== matchStore.currentMatchUUID) {
+                matches.value.splice(index, 1)
+              } else {
+                matches.value.splice(index, 1, payload.new as Match)
+              }
+            }
+            if (inAMatch.value && payload.new.uuid === matchStore.currentMatchUUID) {
+              await fetchUsernames(payload.new.players as unknown as Player)
+            }
+            if (payload.new.uuid === matchStore.currentMatchUUID && payload.new.started === true) {
+              await navigateTo(`/game/${matchStore.currentMatchUUID}`)
+            }
+            break
         }
 }}).subscribe((status) => {
     console.log(status)
@@ -103,41 +114,27 @@ onUnmounted(() => {supabase.removeChannel(changes)})
  * @param players Player Object e.g. {p1: 'uuid1', p2: 'uuid2'}
  */
 async function fetchUsernames(players: Player): Promise<void> {
-  const uuids = Object.values(players as object).filter((uuid): uuid is string => uuid !== null)
+  const uuids = Object.values(players).filter((uuid): uuid is string => uuid !== null)
   const results = await Promise.all(
     uuids.map(async (uuid) => {
-      const { data, error } = await supabase
-        .from('profile')
-        .select('username')
-        .eq('id', uuid)
-        .single()
-      console.log('uuid:', uuid, 'data:', data, 'error:', error)
-      return data?.username ?? 'Unknown'
+      const { data } = await supabase.rpc('get_username', { user_id: uuid })
+      return (data ?? 'Unknown') as string
     })
   )
-  playerUsernames.value = results
+  playerUsernames.value.splice(0, playerUsernames.value.length, ...results)
 }
-
 
 /**
  * Creates a new match with the current user as the host and adds it to the matches array
  */
 async function createMatch(): Promise<void> {
-  if (isProcessing.value) return
-  isProcessing.value = true
-  try {
-    const { data, error } = await supabase.from('matches').insert({ players: { p1: user.value?.sub } }).select('*').single()
-    if (error || !data) return console.error(error)
-
-    if (!matches.value.find(m => m.uuid === data.uuid)) {
-      matches.value.push(data)
-    }
-    currentMatchUUID.value = data.uuid
-    inAMatch.value = true
-    await fetchUsernames(data.players as unknown as Player)
-  } finally {
-    isProcessing.value = false
-  }
+  const { data, error } = await supabase.from('matches').insert({ players: { p1: playerStore.uuid } }).select("*").single();
+  if (error || !data) return console.error(error)
+  matches.value.push(data)
+  currentMatchUUID.value = data.uuid
+  inAMatch.value=true
+  await fetchUsernames(data.players as unknown as Player)
+  
 }
 
 /**
@@ -145,53 +142,44 @@ async function createMatch(): Promise<void> {
  * @param uuid uuid of a player joining
  */
 async function joinMatch(uuid: string) {
-  if (isProcessing.value) return
-  isProcessing.value = true
-  try {
-    const { data, error } = await supabase.from('matches').select('players').eq('uuid', uuid).single()
-    if (!data || error) return console.error(error)
+  const { data, error } = await supabase.from('matches').select('players').eq('uuid', uuid).single()
 
-    if (Object.keys(data.players as object).length >= 2) return console.error('too many')
+  if (!data || error) return console.error(error)
 
-    const updatedPlayers = { ...data.players as object, p2: user.value?.sub }
+  const playerCount = Object.keys(data.players).length
+  if (playerCount >= 2) return console.error('too many')
 
-    const { error: updateError } = await supabase.from('matches').update({ players: updatedPlayers }).eq('uuid', uuid)
-    if (updateError) return console.error(updateError)
+  const updatedPlayers = { ...data.players, p2: user.value?.sub }
 
-    currentMatchUUID.value = uuid
-    inAMatch.value = true
-    await fetchUsernames(updatedPlayers as unknown as Player)
-  } finally {
-    isProcessing.value = false
-  }
+  const { error: updateError } = await supabase.from('matches').update({ players: updatedPlayers }).eq('uuid', uuid)
+  currentMatchUUID.value = uuid
+  inAMatch.value=true
+  await fetchUsernames(updatedPlayers as unknown as Player)
+
+
 }
 
 /**
  * Leaves a match by deleting if host leaves or updates match to remove p2 in Players
  */
 async function leaveMatch() {
-  if (isProcessing.value) return
-  isProcessing.value = true
+  const { error } = await supabase.rpc('leave_match', {
+    match_uuid: currentMatchUUID.value,
+    leaving_user: playerStore.uuid
+  })
+  if (error) return console.error(error)
 
-  try {
-    const { error } = await supabase.rpc('leave_match', {
-      match_uuid: currentMatchUUID.value,
-      leaving_user: playerStore.uuid
-    })
-    if (error) return console.error(error)
-
-    inAMatch.value = false
-    currentMatchUUID.value = ''
-  } finally {
-    isProcessing.value = false
-  }
+  inAMatch.value = false
+  currentMatchUUID.value = ''
 }
+
 
 /**
  * Starts a match by redirecting to game page and passing in match uuid as param
  */
 async function startMatch(){
     const { error: updateError } = await supabase.from('matches').update({ started: true }).eq('uuid', currentMatchUUID.value)
+    if (!updateError) await navigateTo(`/game/${currentMatchUUID.value}`)
 }
 
 </script>
@@ -199,28 +187,6 @@ async function startMatch(){
 <template>
   <div class="absolute top-4 right-4 flex gap-2">
   <!-- Lobby view -->
-  <div class="absolute top-4 right-4">
-    <button @click="navigateTo('/account')" class="btn btn-ghost btn-sm gap-2">
-      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-        <circle cx="12" cy="7" r="4"/>
-      </svg>
-      Account
-    </button>
-  </div>
-  <div class="absolute top-4 left-4">
-  <button
-    @click="navigateTo({
-      path: '/player',
-      query: { mode: 'edit' }
-    })"
-    class="btn btn-ghost btn-sm gap-2"
-  >
-    Single Player
-  </button>
-</div>
-</div>
-
   <div v-if="!inAMatch" class="min-h-screen bg-base-300 flex flex-col items-center justify-center p-6 gap-6">
 
     <h1 class="text-4xl font-black text-base-content tracking-tight">Game Lobby</h1>
@@ -230,7 +196,7 @@ async function startMatch(){
         <div
           v-for="match in matches"
           :key="match.uuid"
-          @click="!isProcessing && joinMatch(match.uuid)"
+          @click="joinMatch(match.uuid)"
           class="card bg-base-100 shadow-md border border-base-content/10 hover:border-primary hover:shadow-lg transition-all cursor-pointer"
         >
           <div class="card-body flex-row items-center justify-between py-4 px-6">
@@ -257,7 +223,7 @@ async function startMatch(){
       </div>
     </div>
 
-    <button @click="createMatch" :disabled="isProcessing" class="btn btn-primary btn-wide gap-2 rounded-xl shadow-lg">
+    <button @click="createMatch" class="btn btn-primary btn-wide gap-2 rounded-xl shadow-lg">
       <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <path d="M12 5v14M5 12h14"/>
       </svg>
@@ -283,14 +249,13 @@ async function startMatch(){
             class="flex items-center gap-3 bg-base-200 rounded-xl px-4 py-3"
           >
             <div class="avatar placeholder">
-              <div class="bg-primary text-primary-content rounded-full w-8 flex items-center justify-center">
-                <span class="text-sm font-black">{{ username.charAt(0).toUpperCase() }}</span>
+              <div class="bg-primary text-primary-content rounded-full w-8">
+                <span class="text-sm font-black">{{ username?.charAt(0).toUpperCase() }}</span>
               </div>
             </div>
             <span class="font-mono text-xs text-base-content/60">{{ username }}</span>
             <div v-if="index === 0" class="badge badge-warning badge-sm ml-auto">Host</div>
           </div>
-
           <!-- Empty slot -->
           <div v-if="Object.keys(currentMatchData?.players || {}).length < 2" class="flex items-center gap-3 bg-base-200/50 rounded-xl px-4 py-3 border border-dashed border-base-content/20">
             <div class="avatar placeholder">
@@ -306,7 +271,7 @@ async function startMatch(){
 
     <!-- Host controls -->
     <div v-if="isUserHost" class="w-full max-w-sm">
-      <button v-if="isMatchFull" @click="startMatch" :disabled="isProcessing" class="btn btn-success btn-block rounded-xl gap-2 shadow-lg">
+      <button v-if="isMatchFull" @click="startMatch" class="btn btn-success btn-block rounded-xl gap-2 shadow-lg">
         <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
           <path d="M8 5v14l11-7z"/>
         </svg>
@@ -321,7 +286,7 @@ async function startMatch(){
       <span>Waiting for the host to start the game...</span>
     </div>
     <!-- Leave button -->
-        <button @click="leaveMatch" :disabled="isProcessing" class="btn btn-outline btn-error w-full max-w-sm rounded-xl gap-2">
+        <button @click="leaveMatch" class="btn btn-outline btn-error w-full max-w-sm rounded-xl gap-2">
         <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
         </svg>
