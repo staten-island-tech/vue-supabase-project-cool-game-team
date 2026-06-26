@@ -294,5 +294,5 @@ async function startMatch(){
         </button>
 
 </div>
-  
+  </div>
 </template>

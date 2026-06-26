@@ -92,6 +92,7 @@ const supabaseClient = useSupabaseClient();
           </div>
           <p class="text-center text-xs text-base-content/60 mt-2">
             After clicking Sign In, log in with the magic link sent to your email.
+            If you don't see it, check your spam folder.
           </p>
 
         </form>
