@@ -1,6 +1,11 @@
 <template>
+  <div
+    :class="mode === 'singleplayer'
+      ? 'flex items-center justify-center min-h-screen'
+      : ''"
+  >
   <div :style="{ width: scale * 800 + 'px', height: scale * 900 + 'px' }" class="overflow-hidden relative">
-     <div v-if="mode=='multiplayer'"
+    <div v-if="mode=='multiplayer'"
   class="absolute top-2 z-20 left-2 bg-black/70 text-white px-3 py-1 rounded-md text-sm font-semibold"
 >
   Your Screen
@@ -16,6 +21,7 @@
         Time Survived: {{ formattedTime }}
       </div>
     </div>
+  </div>
   </div>
 </template>
 

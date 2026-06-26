@@ -185,10 +185,27 @@ async function startMatch(){
 </script>
 
 <template>
+    <div class="absolute top-4 right-4 flex gap-2">
+  <button @click="navigateTo('/account')" class="btn btn-ghost btn-sm gap-2">
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+      <circle cx="12" cy="7" r="4"/>
+    </svg>
+    Account
+  </button>
+
+  <button @click="navigateTo('/player')" class="btn btn-ghost btn-sm gap-2">
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <polygon points="5 3 19 12 5 21 5 3"/>
+</svg>
+    Singleplayer
+  </button>
+</div>
+
   <!-- Lobby view -->
   <div v-if="!inAMatch" class="min-h-screen bg-base-300 flex flex-col items-center justify-center p-6 gap-6">
 
-    <h1 class="text-4xl font-black text-base-content tracking-tight">Game Lobby</h1>
+    <h1 class="text-4xl font-black text-base-content tracking-tight">Multiplayer Lobby</h1>
 
     <div class="w-full max-w-lg flex flex-col gap-3 max-h-96 overflow-y-auto pr-1">
       <template v-if="matches.length > 0">

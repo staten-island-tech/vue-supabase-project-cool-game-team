@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-row overflow-hidden w-screen h-screen">
-    <player @gameData="sendCreatedFruit" @moveFruit="sendFruitMove" @lose="handleLose"/>
+    <player :mode="'multiplayer'" @gameData="sendCreatedFruit" @moveFruit="sendFruitMove" @lose="handleLose"/>
     <opponent :state="opponentState" :opponentMoveFruit="opponentMoveFruit"/>
   </div>
 </template>
