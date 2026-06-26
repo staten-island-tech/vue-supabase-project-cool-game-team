@@ -185,7 +185,6 @@ async function startMatch(){
 </script>
 
 <template>
-  <div class="absolute top-4 right-4 flex gap-2">
   <!-- Lobby view -->
   <div v-if="!inAMatch" class="min-h-screen bg-base-300 flex flex-col items-center justify-center p-6 gap-6">
 
@@ -294,5 +293,4 @@ async function startMatch(){
         </button>
 
 </div>
-  </div>
 </template>
