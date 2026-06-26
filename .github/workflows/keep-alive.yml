@@ -1,15 +1,19 @@
 #this is an automation, which is needed bc supabase keeps pausing after a few days of inactivity
 name: Keep Supabase Alive
+
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 0 * * 0'  # runs every Sunday at midnight
+    - cron: '0 0 * * 0' #runs 00:00 every sunday
 
 jobs:
   ping:
     runs-on: ubuntu-latest
+
     steps:
       - name: Ping Supabase
         run: |
+          echo "Starting ping..."
+          curl -i \
             -H "apikey: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}" \
             "${{ secrets.SUPABASE_URL }}/rest/v1/matches?select=id&limit=1"
